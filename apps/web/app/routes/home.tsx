@@ -2,7 +2,7 @@ import { SITE, withSubject } from "@aihot/industry/site";
 import { data as withHeaders, redirect, useLoaderData } from "react-router";
 import type { Route } from "./+types/home";
 import type { TimelineResponse } from "@aihot/contracts/site";
-import { isCategoryKey, isChannelKey } from "@aihot/contracts/taxonomy";
+import { normalizeCategoryKey, isChannelKey } from "@aihot/contracts/taxonomy";
 import { loadOr404, queryString, releaseBoundCache } from "../lib/api.server";
 import { listPath, organizationLd, pageMeta } from "../lib/seo";
 import { Wordmark } from "../components/Logo";
@@ -19,7 +19,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const channelParam = url.searchParams.get("channel") ?? "all";
   const categoryParam = url.searchParams.get("category");
   const channel = isChannelKey(channelParam) ? channelParam : "all";
-  const category = categoryParam && isCategoryKey(categoryParam) ? categoryParam : null;
+  const category = normalizeCategoryKey(categoryParam);
   const tag = url.searchParams.get("tag")?.trim() || null;
   const upstream = new Headers();
   const data = await loadOr404<TimelineResponse>(`/api/site/timeline${queryString({ channel: channel === "all" ? null : channel, category, tag })}`, { responseHeaders: upstream, signal: request.signal });

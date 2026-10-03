@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   AIHOT design tokens — the look of the original site: warm off-white paper,
+   AI Infra design tokens — warm off-white paper,
    ink text, one teal accent (cyan in dark), hairline borders, no gradients.
    Components use the semantic names below; values change per theme only.
    --------------------------------------------------------------------------- */
@@ -421,6 +421,10 @@
 .prose h2 { font-size: 1.26em; margin-top: 2.2em; }
 .prose h3 { font-size: 1.1em; margin-top: 1.8em; }
 .prose h4, .prose h5 { font-size: 1em; margin-top: 1.5em; }
+.prose h2.reading-section {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.7em;
+}
 .prose :is(h2, h3, h4, h5) + * { margin-top: 0.7em; }
 .prose a {
   color: var(--accent);
@@ -441,6 +445,12 @@
   padding: 0.1em 0 0.1em 1em;
   color: var(--ink-3);
 }
+.prose blockquote.reading-dialogue {
+  border-left-color: var(--accent);
+  padding: 0.1em 0 0.1em 1em;
+}
+.prose .reading-speaker { color: var(--accent); font-weight: 650; }
+.prose .reading-key-term { color: var(--ink); font-weight: 700; }
 .prose img, .prose video {
   border-radius: var(--radius-tile);
   margin-inline: auto;

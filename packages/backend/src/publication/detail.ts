@@ -4,6 +4,7 @@ import TurndownService from "turndown";
 import { sql } from "../db.ts";
 import { proxyBodyImages } from "../media/imgproxy.ts";
 import { textToHtml } from "../content/sanitize.ts";
+import { enhanceReadingBody } from "../content/reader.ts";
 import { ITEM_COLUMNS, ITEM_FROM, selectedCondition, toItemSummary, xView, type ItemRow } from "./items.ts";
 import { itemUrl } from "./links.ts";
 import { hasItemPage } from "./rules.ts";
@@ -25,12 +26,13 @@ export type DetailResult =
 function withOutline(html: string): { html: string; outline: OutlineEntry[] } {
   const outline: OutlineEntry[] = [];
   let n = 0;
-  const out = html.replace(/<h([2-4])(?: id="sec-\d+")?>([\s\S]*?)<\/h\1>/gi, (_m, level: string, inner: string) => {
+  const out = html.replace(/<h([2-4])\b([^>]*)>([\s\S]*?)<\/h\1>/gi, (_m, level: string, attrs: string, inner: string) => {
     n += 1;
     const id = `sec-${n}`;
     const text = inner.replace(/<[^>]+>/g, "").trim();
     if (text) outline.push({ id, text: text.slice(0, 80), level: Number(level) });
-    return `<h${level} id="${id}">${inner}</h${level}>`;
+    const readingClass = /\bclass="reading-section"/i.test(attrs) ? ' class="reading-section"' : "";
+    return `<h${level}${readingClass} id="${id}">${inner}</h${level}>`;
   });
   return { html: out, outline };
 }
@@ -90,8 +92,8 @@ export async function loadItemDetail(id: string, now = new Date()): Promise<Deta
     };
   } else if (row.body_mode === "full" && row.body_html) {
     const isZh = row.language === "zh" || (/[一-鿿]/.test(row.body_text?.slice(0, 400) ?? "") && row.language !== "en");
-    const original = proxyBodyImages(row.body_html);
-    const zh = isZh ? original : row.tr_html ? proxyBodyImages(row.tr_html) : null;
+    const original = proxyBodyImages(enhanceReadingBody(row.body_html, summary.tags));
+    const zh = isZh ? original : row.tr_html ? proxyBodyImages(enhanceReadingBody(row.tr_html, summary.tags)) : null;
     const primary = withOutline(zh ?? original);
     outline = primary.outline;
     body = {

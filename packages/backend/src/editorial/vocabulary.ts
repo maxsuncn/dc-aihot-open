@@ -1,6 +1,6 @@
 // Tag normalization over the industry pack's vocabulary (industry/taxonomy.ts), which the topics
 // (industry/topics.json) are built on.
-import { CATEGORIES, CATEGORY_TAGS, ENTITY_TAGS, TAG_SYNONYMS, TOPIC_TAGS } from "@aihot/industry/taxonomy";
+import { CATEGORIES, CATEGORY_TAGS, DEFAULT_CATEGORY_TAG, ENTITY_TAGS, TAG_SYNONYMS, TOPIC_TAGS } from "@aihot/industry/taxonomy";
 
 export { CATEGORY_BY_ITEM_TYPE, CATEGORY_TAGS, ENTITIES, ENTITY_TAGS, ITEM_TYPES, TOPIC_TAGS } from "@aihot/industry/taxonomy";
 
@@ -21,7 +21,7 @@ export function normalizeTags(v: unknown, opts: { max?: number; fallbackCategory
   }
   const isCategory = (t: string) => (CATEGORY_TAGS as readonly string[]).includes(t);
   const categoryIndex = tags.findIndex(isCategory);
-  const category = categoryIndex >= 0 ? tags[categoryIndex]! : (opts.fallbackCategory ?? CATEGORY_TAGS[CATEGORY_TAGS.length - 1]!);
+  const category = categoryIndex >= 0 ? tags[categoryIndex]! : (opts.fallbackCategory ?? DEFAULT_CATEGORY_TAG);
   return [category, ...tags.filter((t) => t !== category)].slice(0, max);
 }
 

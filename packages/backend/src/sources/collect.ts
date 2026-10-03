@@ -46,7 +46,7 @@ function rewriteUrl(c: Candidate, source: SourceRow): Candidate {
 async function loadSource(id: string): Promise<SourceRow | null> {
   const [s] = await sql<SourceRow[]>`
     SELECT id, name, kind, config, tier, participation_mode, first_party, interval_minutes, enabled, cursor, fail_count
-    FROM sources WHERE id = ${id}`;
+    FROM sources WHERE id = ${id} AND deleted_at IS NULL`;
   return s ?? null;
 }
 
@@ -306,7 +306,7 @@ const sharded = () => sql`kind = 'x_search' AND config->>'query' ~* ${SHARDABLE_
 async function scheduleXShards(): Promise<number> {
   const rows = await sql<Array<Pick<SourceRow, "id" | "kind" | "config" | "cursor" | "participation_mode"> & { due: boolean }>>`
     SELECT id, kind, config, cursor, participation_mode, (next_fetch_at IS NULL OR next_fetch_at <= now()) AS due
-    FROM sources WHERE enabled AND ${sharded()}`;
+    FROM sources WHERE enabled AND deleted_at IS NULL AND ${sharded()}`;
   const due = new Set(rows.filter((r) => r.due).map((r) => r.id));
   let enqueued = 0;
   for (const shard of planXShards(rows)) {
@@ -325,7 +325,7 @@ export async function scheduleDueSources(limit = Number(process.env.FETCH_SCHEDU
   const skipJina = process.env.COLLECT_SKIP_JINA === "true";
   const rows = await sql<{ id: string }[]>`
     SELECT id FROM sources
-    WHERE enabled AND kind IN ${sql(kinds)} AND (next_fetch_at IS NULL OR next_fetch_at <= now()) AND NOT (${sharded()})
+    WHERE enabled AND deleted_at IS NULL AND kind IN ${sql(kinds)} AND (next_fetch_at IS NULL OR next_fetch_at <= now()) AND NOT (${sharded()})
       ${skipJina ? sql`AND config::text NOT LIKE '%r.jina.ai%'` : sql``}
     ORDER BY next_fetch_at NULLS FIRST LIMIT ${limit}`;
   for (const r of rows) {
@@ -337,25 +337,30 @@ export async function scheduleDueSources(limit = Number(process.env.FETCH_SCHEDU
 }
 
 /**
- * Daily: adapt each source's interval to its recent output (active 15 min … quiet 120 min).
- * hot_signal sources are allowed to be slower.
+ * Daily: adapt source intervals; RSS polling stays at the requested two-hour cadence.
  */
 export async function adaptIntervals(): Promise<{ updated: number }> {
   const rows = await sql<Array<Pick<SourceRow, "id" | "participation_mode" | "kind" | "config" | "cursor"> & { paid_listing: boolean; per_day: number }>>`
     SELECT s.id, s.participation_mode, s.kind, s.config, s.cursor, coalesce(s.config->>'url', '') LIKE 'https://r.jina.ai/%' AS paid_listing,
       (SELECT count(*) FROM articles a WHERE a.source_id = s.id AND a.discovered_at > now() - interval '7 days' AND NOT a.backfill) / 7.0 AS per_day
-    FROM sources s WHERE s.enabled AND s.kind IN ('rss', 'web_list', 'json_list', 'x_search')`;
+    FROM sources s WHERE s.enabled AND s.deleted_at IS NULL AND s.kind IN ('rss', 'web_list', 'json_list', 'x_search')`;
   let updated = 0;
   for (const r of rows) {
     const perDay = Number(r.per_day);
-    // Editorial sites and feeds are looked at hourly at least (they cost nothing);
+    // Non-RSS editorial sites and feeds are looked at hourly at least (they cost nothing);
     // editorial X and listings read through Jina stop at two hours (paid per call, within their budgets);
     // hot signals may wait longer.
     const max = r.participation_mode === "hot_signal" ? 180 : r.kind === "x_search" || r.paid_listing ? 120 : 60;
     // Listings read through Jina are not looked at more than hourly: busy ones would outrun its daily budget.
     const min = r.paid_listing ? 60 : 15;
     // X accounts read by shard follow the shard's pace, whatever their own volume.
-    const target = shardHandle(r) ? shardMinutes(r.participation_mode) : perDay <= 0.15 ? max : Math.round(Math.min(max, Math.max(min, (24 * 60) / (perDay * 3))));
+    const target = r.kind === "rss"
+      ? 120
+      : shardHandle(r)
+        ? shardMinutes(r.participation_mode)
+        : perDay <= 0.15
+          ? max
+          : Math.round(Math.min(max, Math.max(min, (24 * 60) / (perDay * 3))));
     const res = await sql`UPDATE sources SET interval_minutes = ${target} WHERE id = ${r.id} AND interval_minutes <> ${target}`;
     updated += res.count;
   }

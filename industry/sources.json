@@ -1,388 +1,1335 @@
 {
-  "$comment": "示范信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里增删改。字段说明见 docs/customize.md。",
+  "exportedAt": "2026-09-29",
   "sources": [
     {
-      "id": "rss-openai-news",
-      "name": "OpenAI News",
+      "id": "datacenter-dynamics",
+      "name": "Data Center Dynamics RSS",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://openai.com/news/rss.xml",
+        "feedUrl": "https://www.datacenterdynamics.com/rss/",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": "openai",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-deepmind",
-      "name": "Google DeepMind",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://deepmind.google/blog/rss.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-research",
-      "name": "Google Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://research.google/blog/rss/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-hugging-face",
-      "name": "Hugging Face Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://huggingface.co/blog/feed.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": "hugging-face",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "开源"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-microsoft-research",
-      "name": "Microsoft Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.microsoft.com/en-us/research/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": "microsoft",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-nvidia-blog",
-      "name": "NVIDIA Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://blogs.nvidia.com/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": "nvidia",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-aws-ml",
-      "name": "AWS Machine Learning Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://aws.amazon.com/blogs/machine-learning/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "教程"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-github-ai",
-      "name": "GitHub Blog · AI & ML",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://github.blog/ai-and-ml/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-mistral",
-      "name": "Mistral AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://mistral.ai/rss.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-bair",
-      "name": "Berkeley AI Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://bair.berkeley.edu/blog/feed.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "first_party": true,
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-the-verge-ai",
-      "name": "The Verge · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T2",
       "first_party": false,
-      "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 720,
       "tags": [
-        "媒体"
+        "AI基础设施",
+        "项目",
+        "能源",
+        "供配电",
+        "液冷",
+        "建设"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-techcrunch-ai",
-      "name": "TechCrunch · AI",
+      "id": "schneider-electric-datacenter-blog",
+      "name": "Schneider Electric Data Center Blog",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "feedUrl": "https://blog.se.com/feed/",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
-      "first_party": false,
-      "owner_entity_id": null,
+      "tier": "T1",
+      "first_party": true,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 720,
       "tags": [
-        "媒体"
+        "数据中心",
+        "AI基础设施",
+        "供配电",
+        "液冷",
+        "能效",
+        "热管理"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false,
+      "owner_entity_id": "schneider-electric"
     },
     {
-      "id": "rss-ars-technica-ai",
-      "name": "Ars Technica · AI",
+      "id": "data-center-frontier",
+      "name": "Data Center Frontier",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://arstechnica.com/ai/feed/",
+        "feedUrl": "https://www.datacenterfrontier.com/__rss/website-scheduled-content.xml?input=%7B%22sectionAlias%22%3A%22home%22%7D",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
+      "tier": "T1",
       "first_party": false,
-      "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 360,
       "tags": [
-        "媒体"
+        "北美项目",
+        "容量",
+        "建设",
+        "投资",
+        "AI基础设施",
+        "能源"
       ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
+      "site_fulltext": true,
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-mit-tech-review-ai",
-      "name": "MIT Technology Review · AI",
+      "id": "data-center-knowledge",
+      "name": "Data Center Knowledge",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+        "feedUrl": "https://www.datacenterknowledge.com/rss.xml",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
+      "tier": "T1",
       "first_party": false,
-      "owner_entity_id": null,
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "媒体"
+        "运营商",
+        "技术",
+        "市场",
+        "项目",
+        "AI基础设施",
+        "能源"
       ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
+      "site_fulltext": true,
+      "syndicate_fulltext": false,
+      "enabled": true
     },
     {
-      "id": "rss-the-decoder",
-      "name": "The Decoder",
+      "id": "rsshub-zhihu-cloud",
+      "name": "RSSHub 知乎话题：云计算",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://the-decoder.com/feed/",
+        "feedUrl": "https://rsshub.app/zhihu/topic/19550358",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
+      "tier": "EXCLUDE_MP",
       "first_party": false,
-      "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
+      "interval_minutes": 720,
       "tags": [
-        "媒体"
+        "云计算",
+        "服务器",
+        "数据中心",
+        "基础设施"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-simon-willison",
-      "name": "Simon Willison",
+      "id": "rsshub-zhihu-server",
+      "name": "RSSHub 知乎话题：服务器",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://simonwillison.net/atom/everything/",
+        "feedUrl": "https://rsshub.app/zhihu/topic/19554575",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
+      "tier": "EXCLUDE_MP",
       "first_party": false,
-      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 720,
+      "tags": [
+        "服务器",
+        "存储",
+        "网络",
+        "算力"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false
+    },
+    {
+      "id": "rsshub-36kr-flashes",
+      "name": "RSSHub 36氪快讯",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/36kr/newsflashes",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "个人"
+        "科技",
+        "创投",
+        "AI",
+        "云计算",
+        "企业动态"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": true
     },
     {
-      "id": "rss-import-ai",
-      "name": "Import AI",
+      "id": "rsshub-36kr-data-center",
+      "name": "RSSHub 36氪搜索：数据中心",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://importai.substack.com/feed",
+        "feedUrl": "https://rss.wudifeixue.com/36kr/search/articles/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T2",
       "first_party": false,
-      "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 180,
+      "interval_minutes": 120,
       "tags": [
-        "个人",
-        "周刊"
+        "数据中心",
+        "项目",
+        "云",
+        "基础设施"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": true
     },
     {
-      "id": "rss-latent-space",
-      "name": "Latent Space",
+      "id": "rsshub-36kr-ai-compute",
+      "name": "RSSHub 36氪搜索：智算中心",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.latent.space/feed",
+        "feedUrl": "https://rss.wudifeixue.com/36kr/search/articles/%E6%99%BA%E7%AE%97%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T2",
       "first_party": false,
-      "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 180,
+      "interval_minutes": 120,
       "tags": [
-        "个人"
+        "智算中心",
+        "AI",
+        "算力",
+        "项目"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "rsshub-36kr-liquid-cooling",
+      "name": "RSSHub 36氪搜索：液冷数据中心",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/36kr/search/articles/%E6%B6%B2%E5%86%B7%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "液冷",
+        "CDU",
+        "冷板",
+        "数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "rsshub-sina-tech",
+      "name": "RSSHub 新浪科技滚动",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/sina/rollnews/2515",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "科技",
+        "AI",
+        "云计算",
+        "服务器",
+        "通信"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "rsshub-sina-finance-research",
+      "name": "RSSHub 新浪财经研究报告",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rsshub.app/sina/finance/rollnews/2675",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 720,
+      "tags": [
+        "研报",
+        "上市公司",
+        "行业",
+        "资本市场"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false
+    },
+    {
+      "id": "rsshub-eastmoney-data-center",
+      "name": "RSSHub 东方财富搜索：数据中心",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rsshub.app/eastmoney/search/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 720,
+      "tags": [
+        "数据中心",
+        "上市公司",
+        "项目",
+        "资本开支"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false
+    },
+    {
+      "id": "rsshub-eastmoney-liquid-cooling",
+      "name": "RSSHub 东方财富搜索：液冷",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rsshub.app/eastmoney/search/%E6%B6%B2%E5%86%B7",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 720,
+      "tags": [
+        "液冷",
+        "服务器",
+        "设备",
+        "上市公司"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false
+    },
+    {
+      "id": "rsshub-eastmoney-compute",
+      "name": "RSSHub 东方财富搜索：智算",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rsshub.app/eastmoney/search/%E6%99%BA%E7%AE%97",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 720,
+      "tags": [
+        "智算",
+        "算力",
+        "AI",
+        "数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": false
+    },
+    {
+      "id": "rsshub-eastmoney-industry-reports",
+      "name": "RSSHub 东方财富行业研报",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/eastmoney/report/industry",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "行业研报",
+        "公司",
+        "市场",
+        "估值"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-data-center",
+      "name": "Google Alerts RSS：数据中心",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "数据中心",
+        "行业动态",
+        "项目"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-ai-data-center",
+      "name": "Google Alerts RSS：人工智能数据中心",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "AI",
+        "数据中心",
+        "智算",
+        "项目"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-aidc",
+      "name": "Google Alerts RSS：AIDC",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/AIDC",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "AIDC",
+        "AI",
+        "算力",
+        "基础设施"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-intelligent-compute-center",
+      "name": "Google Alerts RSS：智算中心",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%99%BA%E7%AE%97%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "智算中心",
+        "算力",
+        "项目",
+        "运营"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-liquid-cooling-dc",
+      "name": "Google Alerts RSS：液冷 数据中心",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%B6%B2%E5%86%B7%20%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "液冷",
+        "CDU",
+        "冷板",
+        "数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-dc-800v",
+      "name": "Google Alerts RSS：数据中心 800V 直流",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%20800V%20%E7%9B%B4%E6%B5%81",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "800V",
+        "直流",
+        "供配电",
+        "AI数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-dc-ups-power",
+      "name": "Google Alerts RSS：数据中心 UPS 配电",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%20UPS%20%E9%85%8D%E7%94%B5",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "UPS",
+        "配电",
+        "电力",
+        "数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-dc-bms-dcim",
+      "name": "Google Alerts RSS：数据中心 BMS DCIM EPMS",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%20BMS%20DCIM%20EPMS",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "BMS",
+        "DCIM",
+        "EPMS",
+        "动环",
+        "运维"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-dc-tender",
+      "name": "Google Alerts RSS：数据中心 招标",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%20%E6%8B%9B%E6%A0%87",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "招标",
+        "采购",
+        "项目",
+        "设备"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-dc-capex",
+      "name": "Google Alerts RSS：数据中心 扩容 资本开支",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83%20%E6%89%A9%E5%AE%B9%20%E8%B5%84%E6%9C%AC%E5%BC%80%E6%94%AF",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "扩容",
+        "资本开支",
+        "投资",
+        "容量"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-ai-data-center-en",
+      "name": "Google Alerts RSS：AI data center",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/AI%20data%20center",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "AI",
+        "data center",
+        "hyperscale",
+        "project"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-liquid-cooling-en",
+      "name": "Google Alerts RSS：liquid cooling data center",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/liquid%20cooling%20data%20center",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "liquid cooling",
+        "CDU",
+        "thermal",
+        "AI"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-power-grid-dc-en",
+      "name": "Google Alerts RSS：data center power grid",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/data%20center%20power%20grid",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "power",
+        "grid",
+        "interconnection",
+        "energy"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "google-alert-construction-dc-en",
+      "name": "Google Alerts RSS：data center construction",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.wudifeixue.com/google/alerts/data%20center%20construction",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "EXCLUDE_MP",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "construction",
+        "site selection",
+        "capacity",
+        "project"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-idcquan",
+      "name": "IDC圈（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/2398302160.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "项目",
+        "技术",
+        "企业",
+        "算力",
+        "绿色数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-dtdata",
+      "name": "DTDATA（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3082750453.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "数据中心项目",
+        "智算",
+        "算力",
+        "机房",
+        "运营"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-liquid-cooling-chain",
+      "name": "AI液冷全链条产业链（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3625054859.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "液冷",
+        "CDU",
+        "服务器",
+        "供应链",
+        "设备"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-cdcc",
+      "name": "CDCC（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3889073957.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T1_5",
+      "first_party": true,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "标准",
+        "运维",
+        "后备电源",
+        "绿色数据中心",
+        "白皮书"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-dahua-idc",
+      "name": "大话IDC（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3561775755.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "IDC",
+        "项目",
+        "机房",
+        "运维",
+        "行业观点"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-deepknowledge",
+      "name": "DeepKnowledge（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3927720653.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "AIDC",
+        "液冷",
+        "供配电",
+        "工程",
+        "白皮书",
+        "专家"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-maimai-liquid-cooling",
+      "name": "麦麦网液冷产业链（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3957655983.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "液冷",
+        "CDU",
+        "冷源",
+        "供应链",
+        "厂商"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-dcworld",
+      "name": "数据中心世界网（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3920203404.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "数据中心",
+        "智算",
+        "UPS",
+        "制冷",
+        "液冷",
+        "运维",
+        "招标"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-dc-operations",
+      "name": "数据中心运维管理（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3084904269.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "运维",
+        "设施管理",
+        "机房",
+        "IT运维",
+        "可靠性"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-compute-observation",
+      "name": "算力观察（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3897742263.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "AI",
+        "算力",
+        "智算中心",
+        "产业",
+        "资本"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-dc-operations-management",
+      "name": "数据中心运营管理（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3293126604.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "运营",
+        "运维",
+        "容量",
+        "能效",
+        "成本",
+        "IDC"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-bhi-projects",
+      "name": "BHI拟在建项目网（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3222556991.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "拟建项目",
+        "招标",
+        "建设",
+        "区域",
+        "项目阶段"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-idcinside",
+      "name": "IDCInside（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/2392640974.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "IDC",
+        "项目",
+        "算力",
+        "液冷",
+        "供应链",
+        "企业"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-yumou",
+      "name": "尉谋家之言（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3632386774.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "行业观点",
+        "市场判断",
+        "企业观察",
+        "算力"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-compute-outpost",
+      "name": "算力前哨所（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3203791484.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "算力",
+        "AI",
+        "芯片",
+        "服务器",
+        "数据中心",
+        "产业链"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-chaowen-notes",
+      "name": "朝闻夕拾笔记（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3213834531.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "行业观察",
+        "政策",
+        "技术",
+        "项目",
+        "观点"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-idce-expo",
+      "name": "IDCE数据中心展（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3229957272.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "展会",
+        "技术",
+        "厂商",
+        "产品",
+        "数据中心"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-idc-lifecycle",
+      "name": "IDC全生命周期价值管理（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3870905366.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "IDC",
+        "全生命周期",
+        "建设",
+        "运营",
+        "改造",
+        "能效",
+        "成本"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
+    },
+    {
+      "id": "wechat-idc-career-eleven",
+      "name": "职在IDC的十一（公众号 RSS）",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://124.221.252.196/feed/3919651702.xml",
+        "sortByPublishedAt": true,
+        "_aihot": {
+          "initialBackfillLimit": 4,
+          "initialBackfillMonths": 1
+        }
+      },
+      "tier": "T2",
+      "first_party": false,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "公众号",
+        "职业观察",
+        "IDC",
+        "行业观点",
+        "人才",
+        "运营"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "enabled": true
     }
   ]
 }

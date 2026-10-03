@@ -156,11 +156,7 @@ function Maker({ maker, contact }: { maker: NonNullable<typeof ABOUT.maker>; con
             <p key={line}>{line}</p>
           ))}
           <p className="text-ink-3">
-            它一直在改，改了什么都写在
-            <Link to="/changelog" className="text-accent hover:underline">
-              更新日志
-            </Link>
-            里；有想法、遇到问题，去
+            有想法、遇到问题，去
             <Link to="/feedback" className="text-accent hover:underline">
               反馈页
             </Link>
@@ -271,13 +267,17 @@ export default function AboutPage() {
 
       {ABOUT.maker && <Maker maker={ABOUT.maker} contact={contact} />}
 
-      <p className="mt-16 well rounded-card px-5 py-4 text-[13px] leading-[1.85] text-ink-3">
-        {ABOUT.copyright}
-        <Link to="/feedback" className="text-accent hover:underline">
-          反馈页
-        </Link>
-        联系我们。
-      </p>
+      <section className="mt-16 well space-y-3 rounded-card px-5 py-4 text-[13px] leading-[1.85] text-ink-3" aria-label="关于本站">
+        <p>{ABOUT.openSource}</p>
+        <p>{ABOUT.process}</p>
+        <p>{ABOUT.steps.publish}</p>
+        <p>
+          {ABOUT.weeklyLead}{" "}
+          <a href={ABOUT.weeklyUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">{ABOUT.weeklyLinkLabel}</a>
+          {ABOUT.weeklyTail}
+        </p>
+        <p>{ABOUT.contact} <Link to="/feedback" className="text-accent hover:underline">留言联系</Link>。</p>
+      </section>
 
       <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-[12.5px] text-ink-4">
         <span>{SITE.footerNote}</span>

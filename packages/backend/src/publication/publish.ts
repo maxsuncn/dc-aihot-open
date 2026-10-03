@@ -2,12 +2,14 @@
 // manual overrides and grouping, then record selected-set changes in the sync ledger.
 // Rebuilding only re-reads stored results; it never calls a model.
 import { SITE } from "@aihot/industry/site";
+import { SELECTION } from "@aihot/industry/selection";
 import { toPublicApiCategory } from "@aihot/contracts/taxonomy";
 import { config } from "../config.ts";
 import { one, sql, type Tx } from "../db.ts";
 import { sha256, stableJson } from "../lib/ids.ts";
 import { collapseWhitespace } from "../lib/text.ts";
 import { itemUrl } from "./links.ts";
+import { dailySelectionPlan } from "./daily-cap.ts";
 import { enqueue, QUEUES, shutdownSignal } from "../jobs/queue.ts";
 import {
   bodyModeOf, channelOf, displayTags, isIndexable, isPoolEligible, isSelectable, mayRedistribute, type SourceFacts,
@@ -182,7 +184,27 @@ export async function publishArticleTx(tx: Tx, articleId: string, options: Publi
   const visibility = source.participation_mode === "isolated" ? "withdrawn" : (override?.visibility ?? "public");
 
   const eligible = isPoolEligible({ participationMode: source.participation_mode, relevance, title, summary });
-  const selected = isSelectable(eligible, judgedSelected, source.tier);
+  const scoreQualified = score !== null && score >= (SELECTION.thresholds[source.tier] ?? Number.POSITIVE_INFINITY);
+  let selected = isSelectable(eligible, judgedSelected, source.tier) && (typeof f.selected === "boolean" || scoreQualified);
+  let dailyEvictedIds: string[] = [];
+  if (selected) {
+    const [day] = await tx<{ local_day: string }[]>`
+      SELECT (discovered_at AT TIME ZONE 'Asia/Shanghai')::date::text AS local_day
+      FROM articles WHERE id = ${articleId}`;
+    const localDay = day!.local_day;
+    await tx`SELECT pg_advisory_xact_lock(hashtext(${"selected-daily:" + localDay}))`;
+    const existing = await tx<{ article_id: string; score: number | null; discovered_at: Date }[]>`
+      SELECT article_id, score, discovered_at FROM publications
+      WHERE selected AND visibility = 'public' AND article_id <> ${articleId}
+        AND (discovered_at AT TIME ZONE 'Asia/Shanghai')::date = ${localDay}::date`;
+    const plan = dailySelectionPlan(
+      existing.map((row) => ({ articleId: row.article_id, score: row.score, discoveredAt: row.discovered_at })),
+      { articleId, score, discoveredAt: article.discovered_at },
+      SELECTION.dailyCap,
+    );
+    selected = plan.candidateSelected;
+    dailyEvictedIds = plan.evictedIds;
+  }
   const reason = selected ? pickString(f.reason, analysis?.reason_zh ?? null) : null;
   const hasXPost = !!article.x_post;
   const channel = channelOf(source.kind, hasXPost);
@@ -318,6 +340,26 @@ export async function publishArticleTx(tx: Tx, articleId: string, options: Publi
     const seq = await appendLedger(tx, articleId, "remove", null, now, now);
     await tx`UPDATE selected_state SET in_set = false, payload_hash = NULL, last_seq = ${seq} WHERE article_id = ${articleId}`;
     ledger = "remove";
+  }
+
+  // When a higher-scoring item arrives later, retire the lowest-ranked selected items for that day.
+  for (const evictedId of dailyEvictedIds) {
+    const [evicted] = await tx<{ summary: string | null; seo_indexed_at: Date | null; seo_excluded_at: Date | null }[]>`
+      SELECT summary, seo_indexed_at, seo_excluded_at FROM publications
+      WHERE article_id = ${evictedId} AND selected AND visibility = 'public' FOR UPDATE`;
+    if (!evicted) continue;
+    const indexableAfterSelection = isIndexable({
+      visibility: "public", hasSummary: !!evicted.summary, selected: false,
+      seoIndexedAt: evicted.seo_indexed_at, seoExcludedAt: evicted.seo_excluded_at,
+    });
+    await tx`UPDATE publications SET selected = false, reason = NULL, indexable = ${indexableAfterSelection},
+                revision = revision + 1, updated_at = now()
+              WHERE article_id = ${evictedId} AND selected`;
+    const [evictedState] = await tx<{ in_set: boolean }[]>`SELECT in_set FROM selected_state WHERE article_id = ${evictedId}`;
+    if (evictedState?.in_set) {
+      const seq = await appendLedger(tx, evictedId, "remove", null, now, now);
+      await tx`UPDATE selected_state SET in_set = false, payload_hash = NULL, last_seq = ${seq} WHERE article_id = ${evictedId}`;
+    }
   }
 
   const wasPublic = !!previous && previous.visibility !== "withdrawn" && previous.eligible;

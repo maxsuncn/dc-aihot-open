@@ -38,7 +38,6 @@ const GROUPS: Array<{ title: string; rows: Row[] }> = [
     title: "关于",
     rows: [
       { to: "/about", label: `关于 ${SITE.name}`, icon: <IconHeart size={18} /> },
-      { to: "/changelog", label: "更新日志", icon: <IconHistory size={18} /> },
       { to: "/feedback", label: "意见反馈", icon: <IconMessage size={18} /> },
     ],
   },

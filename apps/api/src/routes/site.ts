@@ -2,7 +2,7 @@
 // Reads through the same public read layer as v1; no cookies are read or set.
 import { FEATURES } from "@aihot/industry/features";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { isCategoryKey, isChannelKey, type CategoryKey, type ChannelKey } from "@aihot/contracts/taxonomy";
+import { isChannelKey, normalizeCategoryKey, type CategoryKey, type ChannelKey } from "@aihot/contracts/taxonomy";
 import { InvalidCursorError } from "@aihot/backend/lib/cursor";
 import { exportMarkdown, loadItemDetail, siteItemDetail } from "@aihot/backend/publication/detail";
 import { loadPool, SearchBusyError } from "@aihot/backend/publication/pool";
@@ -67,8 +67,8 @@ export interface FilterParams {
 export async function parseFilters(q: Record<string, string>): Promise<FilterParams> {
   const channel = q.channel ?? "all";
   if (!isChannelKey(channel)) throw new BadRequest("invalid channel");
-  const category = q.category ?? null;
-  if (category !== null && !isCategoryKey(category)) throw new BadRequest("invalid category");
+  const category = q.category === undefined ? null : normalizeCategoryKey(q.category);
+  if (q.category !== undefined && category === null) throw new BadRequest("invalid category");
   const tag = q.tag?.trim() ? q.tag.trim().slice(0, 60) : null;
   const topic = q.topic?.trim() || null;
   let topicTags: string[] | null = null;

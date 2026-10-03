@@ -12,7 +12,7 @@ import { banSource, eraseFeedback, feedbackScreenshot, listFeedback, unbanSource
 import { listMonitorEvents, listMonitorPosts, relinkPost, resolveMonitorPost, reviewReceipt, setWithdrawn, updateMonitorEvent } from "@aihot/backend/admin/monitor";
 import { releaseReceipt, requeueFailedArticles, resolveDelivery, runsOverview } from "@aihot/backend/admin/runs";
 import { listBudgets, listTargets, replaceContactQr, setTargetEnabled, updateBudget } from "@aihot/backend/admin/settings";
-import { createSource, fetchNow, listSources, previewSource, sourceDetail, updateSource } from "@aihot/backend/admin/sources";
+import { createSource, deleteSource, fetchNow, listSources, previewSource, sourceDetail, updateSource } from "@aihot/backend/admin/sources";
 import { sql } from "@aihot/backend/db";
 import { loadContact } from "@aihot/backend/site/contact";
 import { sendProblem } from "../http/respond.ts";
@@ -45,8 +45,12 @@ export function registerAdmin(app: FastifyInstance) {
     const b = body<{ patch: unknown; version: string; reason?: string }>(req);
     return orNotFound(req, reply, await updateSource(param(req, "id"), b, actorOf(admin)));
   }));
+  app.delete("/api/admin/sources/:id", adminHandler(async (req, reply, admin) => {
+    const b = body<{ reason: string }>(req);
+    return orNotFound(req, reply, await deleteSource(param(req, "id"), b.reason, actorOf(admin)));
+  }));
   app.post("/api/admin/sources/:id/preview", adminHandler(async (req, reply) => {
-    const [s] = await sql`SELECT * FROM sources WHERE id = ${param(req, "id")}`;
+    const [s] = await sql`SELECT * FROM sources WHERE id = ${param(req, "id")} AND deleted_at IS NULL`;
     return s ? previewSource(s as never) : notFound(req, reply);
   }));
   app.post("/api/admin/sources/:id/fetch", adminHandler(async (req, reply, admin) => orNotFound(req, reply, await fetchNow(param(req, "id"), actorOf(admin)))));
@@ -139,7 +143,7 @@ export function registerAdmin(app: FastifyInstance) {
   app.get("/api/admin/nav-counts", adminHandler(async () => {
     const [c] = await sql<Record<string, number>[]>`
       SELECT (SELECT count(*)::int FROM feedback WHERE status = 'new') AS feedback,
-             (SELECT count(*)::int FROM sources WHERE enabled AND health = 'failing') AS sources,
+             (SELECT count(*)::int FROM sources WHERE enabled AND health = 'failing' AND deleted_at IS NULL) AS sources,
              (SELECT count(*)::int FROM receipts WHERE status = 'unknown') + (SELECT count(*)::int FROM deliveries WHERE status = 'unknown') AS runs,
              (SELECT count(*)::int FROM monitor_posts WHERE (recognition->>'needsReview')::boolean IS TRUE AND (recognition->>'reviewed')::boolean IS NOT TRUE AND processed_at > now() - interval '7 days')
                + (SELECT count(*)::int FROM monitor_posts WHERE processed_at IS NULL AND collected_at < now() - interval '20 minutes') AS monitor`;

@@ -94,7 +94,7 @@ export interface Column<T> {
   align?: "right";
 }
 
-export function DataTable<T>({ rows, columns, rowKey, empty = "暂无数据", onRowClick, dense }: { rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string | number; empty?: ReactNode; onRowClick?: (r: T) => void; dense?: boolean }) {
+export function DataTable<T>({ rows, columns, rowKey, empty = "暂无数据", onRowClick, dense, highlightKey }: { rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string | number; empty?: ReactNode; onRowClick?: (r: T) => void; dense?: boolean; highlightKey?: string | number | null }) {
   if (!rows.length) return <Empty>{empty}</Empty>;
   return (
     <div className="overflow-x-auto">
@@ -112,8 +112,9 @@ export function DataTable<T>({ rows, columns, rowKey, empty = "暂无数据", on
           {rows.map((r) => (
             <tr
               key={rowKey(r)}
+              data-row-key={rowKey(r)}
               onClick={onRowClick ? () => onRowClick(r) : undefined}
-              className={`border-b border-line/70 last:border-0 ${onRowClick ? "cursor-pointer transition-colors hover:bg-bg-sunk/60" : ""}`}
+              className={`border-b border-line/70 last:border-0 ${onRowClick ? "cursor-pointer transition-colors hover:bg-bg-sunk/60" : ""} ${highlightKey != null && String(highlightKey) === String(rowKey(r)) ? "bg-accent/10 ring-1 ring-inset ring-accent/45" : ""}`}
             >
               {columns.map((c) => (
                 <td key={c.key} className={`${dense ? "py-1.5" : "py-2.5"} px-3 align-top text-ink-2 ${c.align === "right" ? "num text-right" : ""} ${c.className ?? ""}`}>

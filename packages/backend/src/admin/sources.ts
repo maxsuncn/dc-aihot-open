@@ -30,12 +30,13 @@ export async function listSources(f: SourceListFilters) {
   const page = Math.max(1, f.page ?? 1);
   const q = f.q?.trim() ? `%${f.q.trim()}%` : null;
   const rows = await sql`
-    SELECT s.id, s.name, s.kind, s.tier, s.participation_mode, s.enabled, s.health, s.fail_count, s.interval_minutes,
+    SELECT s.id, s.name, s.kind, s.tier, s.participation_mode, s.site_fulltext, s.updated_at, s.enabled, s.health, s.fail_count, s.interval_minutes,
            s.last_ok_at, s.last_fetch_at, s.last_error, s.first_party, s.next_fetch_at,
            (SELECT count(*)::int FROM articles a WHERE a.source_id = s.id AND a.discovered_at > now() - interval '7 days') AS items_7d,
            (SELECT count(*)::int FROM publications p WHERE p.source_id = s.id AND p.selected AND p.discovered_at > now() - interval '30 days') AS selected_30d
     FROM sources s
-    WHERE (${q}::text IS NULL OR s.name ILIKE ${q} OR s.id ILIKE ${q} OR s.config::text ILIKE ${q})
+    WHERE s.deleted_at IS NULL
+      AND (${q}::text IS NULL OR s.name ILIKE ${q} OR s.id ILIKE ${q} OR s.config::text ILIKE ${q})
       AND (${f.kind ?? null}::text IS NULL OR s.kind = ${f.kind ?? null})
       AND (${f.health ?? null}::text IS NULL OR s.health = ${f.health ?? null})
       AND (${f.mode ?? null}::text IS NULL OR s.participation_mode = ${f.mode ?? null})
@@ -45,12 +46,12 @@ export async function listSources(f: SourceListFilters) {
   const [totals] = await sql<{ total: number; enabled: number; failing: number; degraded: number }[]>`
     SELECT count(*)::int AS total, count(*) FILTER (WHERE enabled)::int AS enabled,
            count(*) FILTER (WHERE health = 'failing')::int AS failing, count(*) FILTER (WHERE health = 'degraded')::int AS degraded
-    FROM sources`;
+    FROM sources WHERE deleted_at IS NULL`;
   return { page, rows, totals };
 }
 
 export async function sourceDetail(id: string) {
-  const [source] = await sql`SELECT * FROM sources WHERE id = ${id}`;
+  const [source] = await sql`SELECT * FROM sources WHERE id = ${id} AND deleted_at IS NULL`;
   if (!source) return null;
   const runs = await sql`SELECT id, started_at, finished_at, status, found_count, new_count, error, detail FROM fetch_runs WHERE source_id = ${id} ORDER BY started_at DESC LIMIT 30`;
   const items = await sql`
@@ -104,7 +105,7 @@ const EDITABLE = z
 export async function updateSource(id: string, input: { patch: unknown; version: string; reason?: string }, actor: string) {
   const patch = EDITABLE.parse(input.patch);
   return sql.begin(async (tx) => {
-    const [before] = await tx`SELECT * FROM sources WHERE id = ${id} FOR UPDATE`;
+    const [before] = await tx`SELECT * FROM sources WHERE id = ${id} AND deleted_at IS NULL FOR UPDATE`;
     if (!before) return null;
     if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("信源已被其他操作修改，请刷新后再改");
     if (patch.config) assertSupportedConfig(before.kind as SourceRow["kind"], patch.config);
@@ -141,7 +142,7 @@ const CreateSchema = z
     interval_minutes: z.number().int().min(1).max(1440).default(30),
     first_party: z.boolean().default(false),
     tags: z.array(z.string()).default([]),
-    site_fulltext: z.boolean().default(false),
+    site_fulltext: z.boolean().default(true),
     syndicate_fulltext: z.boolean().default(false),
   })
   .strict();
@@ -164,7 +165,7 @@ export function sourceIdentity(kind: string, config: Record<string, unknown>): s
 export async function findDuplicateSource(kind: string, config: Record<string, unknown>) {
   const identity = sourceIdentity(kind, config);
   if (!identity) return null;
-  const rows = await sql<{ id: string; kind: string; config: Record<string, unknown>; name: string }[]>`SELECT id, kind, config, name FROM sources WHERE kind = ${kind}`;
+  const rows = await sql<{ id: string; kind: string; config: Record<string, unknown>; name: string }[]>`SELECT id, kind, config, name FROM sources WHERE kind = ${kind} AND deleted_at IS NULL`;
   return rows.find((r) => sourceIdentity(r.kind, r.config) === identity) ?? null;
 }
 
@@ -184,7 +185,7 @@ export async function createSource(input: unknown, actor: string) {
 }
 
 export async function fetchNow(id: string, actor: string) {
-  const [s] = await sql<{ id: string; kind: string }[]>`SELECT id, kind FROM sources WHERE id = ${id}`;
+  const [s] = await sql<{ id: string; kind: string }[]>`SELECT id, kind FROM sources WHERE id = ${id} AND deleted_at IS NULL`;
   if (!s) return null;
   const jobId =
     s.kind === "mp_account"
@@ -192,4 +193,17 @@ export async function fetchNow(id: string, actor: string) {
       : await enqueue(QUEUES.fetchSource, { sourceId: id, force: true }, { singletonKey: `manual:${id}` });
   await audit(actor, "source.fetch", `source:${id}`, null, null, { jobId });
   return { jobId };
+}
+
+/** Stop subscribing to a source while preserving collected articles and fetch history. */
+export async function deleteSource(id: string, reason: string, actor: string) {
+  return sql.begin(async (tx) => {
+    const [before] = await tx`SELECT * FROM sources WHERE id = ${id} AND deleted_at IS NULL FOR UPDATE`;
+    if (!before) return null;
+    const [after] = await tx`
+      UPDATE sources SET enabled = false, health = 'paused', deleted_at = now(), updated_at = now()
+      WHERE id = ${id} AND deleted_at IS NULL RETURNING id, name, deleted_at`;
+    await audit(actor, "source.delete", `source:${id}`, reason, before, after);
+    return after;
+  });
 }
