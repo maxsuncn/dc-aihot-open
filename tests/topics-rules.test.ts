@@ -5,7 +5,10 @@
 import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { after, before, test } from "node:test";
+import { after, before, test as exampleTest } from "node:test";
+import { RELEASE } from "@aihot/industry/taxonomy";
+// These model-launch regressions require the AI example pack; dc-topics.test.ts covers this fork.
+const test = RELEASE?.category === "ai-models" ? exampleTest : exampleTest.skip;
 import { beijingDate } from "@aihot/contracts/time";
 import { closeDb, sql } from "@aihot/backend/db";
 import { upsertMaterial } from "@aihot/backend/content/materials";
@@ -47,7 +50,7 @@ async function report(o: {company?: string; title: string; category?: string; ta
     publishedAt:published,bodyText:'Supported report',bodyHtml:'<p>Supported report</p>',bodyStatus:'ok',via:'fetch'});
   await sql`UPDATE articles SET discovered_at=${timeline},timeline_at=${timeline},grouped_at=now() WHERE id=${articleId}`;
   await sql`INSERT INTO analyses (article_id,input_revision,origin,relevance,category,title_zh,summary_zh,score,selected,subjects,tags)
-    VALUES (${articleId},1,'rule','pass',${o.category ?? 'ai-models'},${o.title},'新的消息',${o.score ?? 90},true,
+    VALUES (${articleId},1,'rule','pass',${o.category ?? 'technology'},${o.title},'新的消息',${o.score ?? 90},true,
     ${o.company ? [o.company] : []},${o.tags ?? ['模型发布']})`;
   if (o.factId) await sql`INSERT INTO fact_articles (fact_id,article_id,role) VALUES (${o.factId},${articleId},'report')`;
   await publishArticle(articleId,{releasedAt:new Date(timeline.getTime()+60000)});
@@ -56,7 +59,7 @@ async function report(o: {company?: string; title: string; category?: string; ta
 const page = async (slug: string) => {const p=await loadTopicPage(slug,1,new Date()); assert.ok(p); return p;};
 
 test("tutorial, opinion and trend topics keep selected reading without manufacturing milestones or SEO highlights", async () => {
-  for (const [slug, category, tag] of [['tutorials','tip','教程/实践'],['opinions','opinion','大佬观点'],['trends','opinion','现象/趋势']]) {
+  for (const [slug, category, tag] of [['tutorials','technology','教程/实践'],['opinions','market','大佬观点'],['trends','market','现象/趋势']]) {
     const id=await report({title:`高分内容 ${slug}`,category,tags:[tag!],score:99});
     const p=await page(slug!);
     assert.deepEqual(p.chronicle,[],slug);
@@ -69,9 +72,9 @@ test("tutorial, opinion and trend topics keep selected reading without manufactu
 test("launches keep their milestones when the headline also mentions supporting guides or benchmarks", async () => {
   const launch = await report({company:'anthropic',title:'Anthropic 发布 Claude Sonnet 5.5，附模型选型与迁移指南',score:87});
   const model = await report({company:'kimi',title:'Kimi 最强模型 K3 发布，Frontend Code Arena 跑分登顶',score:79});
-  const product = await report({company:'kimi',title:'Kimi Code 焕新升级（附视频教程）',category:'ai-products',tags:['产品更新'],score:76});
-  const tutorial = await report({company:'anthropic',title:'Claude Code 使用指南：如何构建应用',category:'ai-products',tags:['产品更新'],score:99});
-  const view = await fact(null,'anthropic',null,'opinion');
+  const product = await report({company:'kimi',title:'Kimi Code 焕新升级（附视频教程）',category:'players',tags:['产品更新'],score:76});
+  const tutorial = await report({company:'anthropic',title:'Claude Code 使用指南：如何构建应用',category:'players',tags:['产品更新'],score:99});
+  const view = await fact(null,'anthropic',null,'market');
   const opinion = await report({company:'anthropic',title:'Anthropic CEO 谈未来的模型福利',factId:view,score:99});
   const anthropic=await page('anthropic');
   assert.deepEqual(anthropic.milestones.map(m=>m.href),[`/items/${launch}`]);

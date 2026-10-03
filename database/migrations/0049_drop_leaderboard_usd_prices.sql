@@ -1,3 +1,4 @@
--- Model prices live in lb_prices since 0007 (official, subscription and relay prices apart, each in its
--- own currency); the two USD columns the first schema put on lb_models are read and written by nothing.
-ALTER TABLE lb_models DROP COLUMN IF EXISTS input_price_usd, DROP COLUMN IF EXISTS output_price_usd;
+-- DC fork: retain legacy tables and columns for backward-compatible upgrades.
+-- The current application no longer uses this state. Keep the upstream migration
+-- filename so future merges do not accidentally reintroduce destructive cleanup.
+SELECT 1;

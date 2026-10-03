@@ -1,8 +1,4 @@
--- Ranking rows are written and read by run_id, board, model_id, rank, score, coverage and detail only.
--- Nothing writes these five columns any more, and nothing reads their earlier values.
-ALTER TABLE lb_rankings
-  DROP COLUMN IF EXISTS uncertainty,
-  DROP COLUMN IF EXISTS confidence,
-  DROP COLUMN IF EXISTS metric_count,
-  DROP COLUMN IF EXISTS summary,
-  DROP COLUMN IF EXISTS component_scores;
+-- DC fork: retain legacy tables and columns for backward-compatible upgrades.
+-- The current application no longer uses this state. Keep the upstream migration
+-- filename so future merges do not accidentally reintroduce destructive cleanup.
+SELECT 1;

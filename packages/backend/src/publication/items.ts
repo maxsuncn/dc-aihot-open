@@ -1,6 +1,7 @@
 // Public read layer, item level. Every exit (site API, v1, RSS, MCP, sitemap) reads
 // items through these columns and views; which rows are public is decided by scope.ts.
-import type { CategoryKey, ChannelKey } from "@aihot/contracts/taxonomy";
+import { normalizeCategoryKey } from "@aihot/contracts/taxonomy";
+import type { CategoryKey, CategoryQueryKey, ChannelKey } from "@aihot/contracts/taxonomy";
 import type { FeedItemSummary, ItemSummary, MediaView, XPostView } from "@aihot/contracts/site";
 import { sql, type Db } from "../db.ts";
 import { proxiedImage, proxiedImageSet } from "../media/imgproxy.ts";
@@ -73,11 +74,10 @@ export function channelCondition(channel: ChannelKey | null | undefined) {
   return sql`AND p.channel = ${channel}`;
 }
 
-export function categoryCondition(category: CategoryKey | null | undefined, v1 = false) {
+export function categoryCondition(category: CategoryQueryKey | null | undefined, v1 = false) {
   if (!category) return sql``;
-  // v1 and RSS publish opinion as tip.
-  if (v1 && category === "tip") return sql`AND p.category IN ('tip', 'opinion')`;
-  return sql`AND p.category = ${category}`;
+  const canonical = normalizeCategoryKey(category);
+  return canonical ? sql`AND p.category = ${canonical}` : sql`AND false`;
 }
 
 export function tagCondition(tag: string | null | undefined) {

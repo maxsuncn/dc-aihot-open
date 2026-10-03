@@ -3,7 +3,9 @@
 FROM node:24-trixie-slim AS base
 WORKDIR /app
 # pg_dump for the optional database backups (Debian's client matches the PostgreSQL 17 server in compose).
-RUN apt-get update \
+ARG DEBIAN_MIRROR=http://deb.debian.org
+RUN sed -i "s|https://deb.debian.org|${DEBIAN_MIRROR}|g; s|http://deb.debian.org|${DEBIAN_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
+ && apt-get update \
  && apt-get install -y --no-install-recommends postgresql-client ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 

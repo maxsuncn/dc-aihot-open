@@ -16,7 +16,10 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { test } from "node:test";
+import { test as exampleTest } from "node:test";
+import { RELEASE } from "@aihot/industry/taxonomy";
+// These model-launch regressions require the AI example pack; dc-topics.test.ts covers this fork.
+const test = RELEASE?.category === "ai-models" ? exampleTest : exampleTest.skip;
 import type { TopicEvent, TopicMonth } from "@aihot/contracts/site";
 import { CHRONICLES_DIR, companyMilestones, parseChronicle } from "@aihot/backend/publication/chronicles";
 

@@ -1,3 +1,4 @@
--- Topics are read from the industry pack (industry/topics.json); the copy the database kept is no longer
--- read by anything.
-DROP TABLE IF EXISTS topics;
+-- DC fork: retain legacy tables and columns for backward-compatible upgrades.
+-- The current application no longer uses this state. Keep the upstream migration
+-- filename so future merges do not accidentally reintroduce destructive cleanup.
+SELECT 1;

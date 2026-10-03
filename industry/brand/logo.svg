@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="116" fill="#13191c"/><path d="M256 92C271 199 313 241 420 256C313 271 271 313 256 420C241 313 199 271 92 256C199 241 241 199 256 92Z" fill="#2ce2e8"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">MaxTiger情报站</title>
+  <desc id="desc">数据中心机柜与电力连接标志</desc>
+  <rect width="512" height="512" rx="112" fill="#f8f7f3"/>
+  <rect x="104" y="82" width="304" height="348" rx="30" fill="#202a2e"/>
+  <path d="M104 198h304M104 314h304" fill="none" stroke="#f8f7f3" stroke-width="14"/>
+  <g fill="#f8f7f3">
+    <circle cx="151" cy="140" r="13"/><circle cx="151" cy="256" r="13"/><circle cx="151" cy="372" r="13"/>
+  </g>
+  <g fill="none" stroke="#f8f7f3" stroke-linecap="round" stroke-width="15">
+    <path d="M193 140h162M193 256h162M193 372h162"/>
+  </g>
+  <path d="m326 212-55 73h38l-28 70 68-87h-41z" fill="#176b75" stroke="#f8f7f3" stroke-linejoin="round" stroke-width="10"/>
+</svg>

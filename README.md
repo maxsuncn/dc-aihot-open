@@ -1,3 +1,7 @@
+# MaxTiger 情报站 · 数据中心行业
+
+本仓库是 AIHOT 的数据中心行业 Fork。行业配置位于 `industry/`；本站改动和后续合并方法见 [同步上游](docs/upstream-sync.md)。以下保留上游框架说明与作者署名。
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">

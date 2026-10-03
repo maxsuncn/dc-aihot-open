@@ -6,7 +6,10 @@
 // or keep a newly classified tutorial in the company's milestones; check them before cache expiry.
 import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
-import { after, before, test } from "node:test";
+import { after, before, test as exampleTest } from "node:test";
+import { RELEASE } from "@aihot/industry/taxonomy";
+// These model-launch regressions require the AI example pack; dc-topics.test.ts covers this fork.
+const test = RELEASE?.category === "ai-models" ? exampleTest : exampleTest.skip;
 import { closeDb, sql } from "@aihot/backend/db";
 import { upsertMaterial } from "@aihot/backend/content/materials";
 import { stopBoss } from "@aihot/backend/jobs/queue";
@@ -40,7 +43,7 @@ async function report(n: number, hoursAgo: number, subject = "minimax"): Promise
   });
   await sql`UPDATE articles SET discovered_at = ${at}, timeline_at = ${at}, grouped_at = now() WHERE id = ${articleId}`;
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, score, selected, subjects, tags)
-            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${`${subject} 消息 ${n}`}, '摘要', 80, true, ${[subject]}, ${['模型发布']})`;
+            VALUES (${articleId}, 1, 'rule', 'pass', 'technology', ${`${subject} 消息 ${n}`}, '摘要', 80, true, ${[subject]}, ${['模型发布']})`;
   await publishArticle(articleId, { releasedAt: new Date(at.getTime() + 60_000) });
   return articleId;
 }
@@ -71,7 +74,7 @@ test("a correction refreshes named content and its topic membership before the i
   assert.equal(retitled?.highlights[0]?.title, title, "the search snippet");
   assert.equal((await listTopicSummaries()).topics.find((t) => t.slug === "qwen")?.latest?.title, title, "the directory headline");
 
-  await overrideFields(corrected, { fields: { category: "tip" }, version: 1, reason: "实际是教程" }, "test-topics");
+  await overrideFields(corrected, { fields: { category: "technology" }, version: 1, reason: "实际是教程" }, "test-topics");
   const reclassified = await loadTopicPage("qwen", 1);
   assert.deepEqual(reclassified?.milestones, [], "the corrected tutorial is no company milestone");
   assert.equal(reclassified?.items[0]?.id, corrected, "it remains a selected report");

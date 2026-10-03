@@ -118,7 +118,7 @@ test("reply context reuses stored posts and one paid parent across different rep
   assert.ok(posts.every((p) => p.context[0].originalText === `post ${p.context[0].id}`));
 });
 
-test("full archive keeps its contract and advertises the polling alternative on 200 and 304", async () => {
+test("full archive keeps its contract and advertises the polling alternative on 200 and 304", { skip: "Codex monitor is disabled in the DC industry" }, async () => {
   const response = await app.inject({ url: "/api/v1/codex-resets" });
   assert.equal(response.statusCode, 200);
   assert.ok(Array.isArray(response.json().events));

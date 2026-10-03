@@ -268,6 +268,13 @@ export default function AboutPage() {
         </ol>
       </section>
 
+      <section className="mt-10 space-y-3 text-[14px] leading-relaxed text-ink-3">
+        <p>{ABOUT.process}</p>
+        <p>{ABOUT.openSource}</p>
+        <p>{ABOUT.weeklyLead}<a href={ABOUT.weeklyUrl} className="text-accent hover:underline">{ABOUT.weeklyLinkLabel}</a>{ABOUT.weeklyTail}</p>
+        <p>{ABOUT.contact}</p>
+      </section>
+
       {ABOUT.maker && <Maker maker={ABOUT.maker} contact={contact} />}
 
       <p className="mt-16 well rounded-card px-5 py-4 text-[13px] leading-[1.85] text-ink-3">

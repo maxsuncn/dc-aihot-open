@@ -1,13 +1,13 @@
 import { SITE } from "@aihot/industry/site";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import type { Route } from "./+types/source";
 import type { AdminSource, AdminSourceDetail, AdminSourcePreview } from "@aihot/contracts/admin";
 import { adminGet } from "../../lib/admin.server";
 import { useAdminAction } from "../../features/admin/action";
 import { bj, duration, num } from "../../features/admin/format";
 import { HEALTH_LABEL, KIND_LABEL, MODE_LABEL, TIER_LABEL, VISIBILITY_LABEL } from "../../features/admin/labels";
-import { AdminPage, Badge, Button, Card, DataTable, Dot, Empty, Field, healthTone, Input, Json, KV, ReasonDialog, Select, Stat, Textarea, Time } from "../../features/admin/ui";
+import { AdminPage, Badge, Button, ButtonLink, Card, DataTable, Dot, Empty, Field, healthTone, Input, Json, KV, ReasonDialog, Select, Stat, Textarea, Time } from "../../features/admin/ui";
 
 
 /** X runs: pages read, and older stretches still to read (backlog) or given up (dropped). */
@@ -41,6 +41,7 @@ function draftOf(s: AdminSource): Draft {
 export default function SourceDetail({ loaderData }: Route.ComponentProps) {
   const { source: s, runs, items, stats, history } = loaderData;
   const { run, pending } = useAdminAction();
+  const [searchParams] = useSearchParams();
   const [draft, setDraft] = useState<Draft>(() => draftOf(s));
   const [draftFor, setDraftFor] = useState(s.updated_at);
   const [preview, setPreview] = useState<AdminSourcePreview | null>(null);
@@ -52,6 +53,9 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
     setDraftFor(s.updated_at);
   }
   const base = `/api/admin/sources/${encodeURIComponent(s.id)}`;
+  const backParams = new URLSearchParams(searchParams.get("from") ?? "");
+  backParams.set("focus", s.id);
+  const backToSources = `/admin/sources?${backParams.toString()}`;
 
   const patch = (): Record<string, unknown> | null => {
     let config: unknown;
@@ -98,6 +102,7 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
       subtitle={<span className="font-mono text-[12px]">{s.id}</span>}
       actions={
         <>
+          <ButtonLink to={backToSources}>返回</ButtonLink>
           <Button
             busy={pending === "preview"}
             onClick={async () => {

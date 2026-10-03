@@ -4,6 +4,7 @@ import { SITE } from "@aihot/industry/site";
 import { bodyToMarkdown } from "../content/markdown.ts";
 import { sql } from "../db.ts";
 import { proxyBodyImages } from "../media/imgproxy.ts";
+import { enhanceReadingBody } from "../content/reader.ts";
 import { textToHtml } from "../content/sanitize.ts";
 import { exportTranslation, isChineseBody, ITEM_COLUMNS, ITEM_FROM, seatHolders, toItemSummary, xView, type ItemRow } from "./items.ts";
 import { listedCondition } from "./scope.ts";
@@ -28,12 +29,13 @@ export type DetailResult =
 function withOutline(html: string): { html: string; outline: OutlineEntry[] } {
   const outline: OutlineEntry[] = [];
   let n = 0;
-  const out = html.replace(/<h([2-4])(?: id="sec-\d+")?>([\s\S]*?)<\/h\1>/gi, (_m, level: string, inner: string) => {
+  const out = html.replace(/<h([2-4])\b([^>]*)>([\s\S]*?)<\/h\1>/gi, (_m, level: string, attrs: string, inner: string) => {
     n += 1;
     const id = `sec-${n}`;
     const text = inner.replace(/<[^>]+>/g, "").trim();
     if (text) outline.push({ id, text: text.slice(0, 80), level: Number(level) });
-    return `<h${level} id="${id}">${inner}</h${level}>`;
+    const readingClass = /\bclass="reading-section"/i.test(attrs) ? ' class="reading-section"' : "";
+    return `<h${level}${readingClass} id="${id}">${inner}</h${level}>`;
   });
   return { html: out, outline };
 }
@@ -123,7 +125,7 @@ export async function loadItemDetail(id: string, language: "zh" | "original" = "
   } else if (row.body_mode === "full" && row.body_html) {
     const chinese = isChineseBody(row);
     const zh = chinese ? { html: row.body_html, kind: "original" as const } : row.tr_html ? { html: row.tr_html, kind: "translation" as const } : null;
-    reading = readingBody(language, zh, chinese ? null : row.body_html, chinese ? true : row.tr_complete ?? false, (html) => withOutline(proxyBodyImages(html)));
+    reading = readingBody(language, zh, chinese ? null : row.body_html, chinese ? true : row.tr_complete ?? false, (html) => withOutline(enhanceReadingBody(proxyBodyImages(html), row.tags)));
   }
 
   let group: SiteItemDetail["group"] = null;

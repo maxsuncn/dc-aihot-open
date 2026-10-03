@@ -2,10 +2,12 @@
 // manual overrides and grouping, then record selected-set changes in the sync ledger.
 // Rebuilding only re-reads stored results; it never calls a model.
 import { toPublicApiCategory } from "@aihot/contracts/taxonomy";
+import { SELECTION } from "@aihot/industry/selection";
 import { SITE } from "@aihot/industry/site";
 import { one, sql, type Tx } from "../db.ts";
 import { sha256, stableJson } from "../lib/ids.ts";
 import { collapseWhitespace } from "../lib/text.ts";
+import { rankDailySelection } from "./daily-cap.ts";
 import { itemUrl } from "./links.ts";
 import { pickRepresentative, REPRESENTATIVE_COLUMNS, type RepresentativeIdentity } from "./representative.ts";
 import { enqueue, QUEUES, shutdownSignal } from "../jobs/queue.ts";
@@ -232,6 +234,8 @@ export async function publishArticleTx(tx: Tx, articleId: string, options: Publi
     WHERE fa.article_id = ${articleId} AND NOT ${latestCompositeCondition(sql`${articleId}`)} AND fa.role IN ('primary', 'report') AND (s.id IS NULL OR s.merged_into IS NULL)
     ORDER BY (fa.role = 'primary') DESC, fa.created_at LIMIT 1`;
   const [previous] = await tx<PublicationRow[]>`SELECT * FROM publications WHERE article_id = ${articleId}`;
+  const localDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(article.discovered_at);
+  await tx`SELECT pg_advisory_xact_lock(hashtext('dc_selection_cap'))`;
   // The seats of this article's facts (before and after) are settled in this transaction: take the
   // facts' locks first, in a fixed order, so two reports of one fact never settle it at once.
   const seatFacts = [...new Set([previous?.fact_id, membership?.fact_id].filter((x): x is number => typeof x === "number"))].sort((a, b) => a - b);
@@ -257,10 +261,11 @@ export async function publishArticleTx(tx: Tx, articleId: string, options: Publi
   const visibility = source.participation_mode === "isolated" ? "withdrawn" : (override?.visibility ?? "public");
 
   const eligible = isPoolEligible({ participationMode: source.participation_mode, relevance, title, summary });
-  const selectionCandidate = isSelectable(eligible, judgedSelected, source.tier);
+  const scoreQualified = score !== null && score >= (SELECTION.thresholds[source.tier] ?? Number.POSITIVE_INFINITY);
+  const selectionCandidate = isSelectable(eligible, judgedSelected, source.tier) && (f.selected === true || scoreQualified);
   // Scoring nominates a report; a completed identity/value decision admits it to selection.
   // A historical import already has its public decision. Preserve that confirmed state on rebuild.
-  const selected = selectionCandidate && article.grouping_status === "complete"
+  let selected = selectionCandidate && article.grouping_status === "complete"
     && (f.selected === true || article.selection_adds_value !== false);
   const reason = selected ? pickString(f.reason, analysis?.reason_zh ?? null) : null;
   const hasXPost = !!article.x_post;
@@ -351,6 +356,31 @@ export async function publishArticleTx(tx: Tx, articleId: string, options: Publi
              WHERE pool_search.direct IS DISTINCT FROM EXCLUDED.direct OR pool_search.body IS DISTINCT FROM EXCLUDED.body`;
   } else {
     await tx`DELETE FROM pool_search WHERE article_id = ${articleId}`;
+  }
+
+  // Count facts rather than reports: duplicate reports share a single daily slot.
+  // Eviction preserves the judgement and candidate so a later editorial rebuild can reconsider it.
+  const slots = await tx<{ slot: string; score: number | null; discovered_at: Date; first_id: string }[]>`
+    SELECT coalesce('fact:' || fact_id::text, 'article:' || article_id) AS slot,
+           max(score)::float8 AS score, min(discovered_at) AS discovered_at, min(article_id) AS first_id
+    FROM publications WHERE selected AND visibility = 'public'
+      AND (discovered_at AT TIME ZONE 'Asia/Shanghai')::date = ${localDay}::date
+    GROUP BY coalesce('fact:' || fact_id::text, 'article:' || article_id)`;
+  const losers = new Set(rankDailySelection(slots.map((slot) => ({ articleId: slot.first_id, score: slot.score, discoveredAt: slot.discovered_at })))
+    .slice(SELECTION.dailyCap).map((slot) => slot.articleId));
+  const evictedSlots = slots.filter((slot) => losers.has(slot.first_id)).map((slot) => slot.slot);
+  const evicted = evictedSlots.length ? await tx<{ article_id: string; fact_id: number | null }[]>`
+    UPDATE publications p SET selected = false, reason = NULL,
+      indexable = p.visibility = 'public' AND p.summary IS NOT NULL AND p.seo_indexed_at IS NOT NULL AND p.seo_excluded_at IS NULL,
+      revision = revision + 1, updated_at = now()
+    WHERE coalesce('fact:' || p.fact_id::text, 'article:' || p.article_id) = ANY(${evictedSlots}::text[])
+      AND p.selected AND p.visibility = 'public'
+      AND (p.discovered_at AT TIME ZONE 'Asia/Shanghai')::date = ${localDay}::date
+    RETURNING p.article_id, p.fact_id` : [];
+  if (evicted.some((row) => row.article_id === articleId)) selected = false;
+  for (const row of evicted) {
+    await settleSeats(tx, row.fact_id, row.article_id, now);
+    await syncLedger(tx, row.article_id, now);
   }
 
   // Content-group push: once, for an item that arrives live and becomes selected (never for imports,

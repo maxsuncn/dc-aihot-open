@@ -5,15 +5,34 @@ import { CATEGORIES } from "@aihot/industry/taxonomy";
 export type CategoryKey = (typeof CATEGORIES)[number]["key"];
 export const CATEGORY_KEYS = CATEGORIES.map((c) => c.key) as unknown as readonly [CategoryKey, ...CategoryKey[]];
 
+/** Old public category slugs remain accepted as filters; responses use the current category vocabulary. */
+export const LEGACY_CATEGORY_ALIASES = {
+  "power-cooling": "technology",
+  operations: "technology",
+  practice: "technology",
+  industry: "market",
+  research: "whitepaper",
+  policy: "market",
+} as const satisfies Record<string, CategoryKey>;
+export type LegacyCategoryKey = keyof typeof LEGACY_CATEGORY_ALIASES;
+export type CategoryQueryKey = CategoryKey | LegacyCategoryKey;
+export const CATEGORY_QUERY_KEYS = [...CATEGORY_KEYS, "power-cooling", "operations", "practice", "industry", "research", "policy"] as const;
+
 /** Website tab labels. */
 export const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map((c) => [c.key, c.label])) as Record<CategoryKey, string>;
 
-/** The public API, RSS and MCP use the same categories as the website. */
-export const PUBLIC_API_CATEGORY_KEYS = CATEGORY_KEYS;
-export type PublicApiCategoryKey = CategoryKey;
+/** New category keys are canonical; previous keys remain accepted for bookmarked API and RSS filters. */
+export const PUBLIC_API_CATEGORY_KEYS = CATEGORY_QUERY_KEYS;
+export type PublicApiCategoryKey = CategoryQueryKey;
+
+export function normalizeCategoryKey(value: unknown): CategoryKey | null {
+  if (typeof value !== "string") return null;
+  if ((CATEGORY_KEYS as readonly string[]).includes(value)) return value as CategoryKey;
+  return LEGACY_CATEGORY_ALIASES[value as LegacyCategoryKey] ?? null;
+}
 
 export function toPublicApiCategory(category: string | null): PublicApiCategoryKey | null {
-  return isCategoryKey(category) ? category : null;
+  return normalizeCategoryKey(category);
 }
 
 export function isCategoryKey(value: unknown): value is CategoryKey {

@@ -45,7 +45,6 @@ async function build(): Promise<string> {
     { loc: "/about", changefreq: "monthly", priority: 0.5 },
     { loc: "/terms", changefreq: "monthly", priority: 0.4 },
     { loc: "/privacy", changefreq: "monthly", priority: 0.4 },
-    { loc: "/changelog", lastmod: now, changefreq: "weekly", priority: 0.5 },
   );
   if (FEATURES.leaderboard) {
     entries.push(

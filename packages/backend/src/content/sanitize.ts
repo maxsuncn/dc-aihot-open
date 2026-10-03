@@ -83,7 +83,51 @@ export function sanitizeBody(html: string, baseUrl?: string): string {
       (frame.tag === "img" && (!frame.attribs.src || isTrackingImage(frame.attribs.src, frame.attribs.width, frame.attribs.height))) ||
       (frame.tag === "a" && !frame.text.trim() && !frame.mediaChildren?.length),
   });
-  return normalizeBlocks(cleaned);
+  return normalizeBlocks(cleanArticleImages(cleaned));
+}
+
+const IMAGE_DECORATION = /(?:^|[\/_\-.])(?:arrow|icon|sprite|avatar|logo|badge|share|wechat|qrcode|qr-code|ad|ads|advert|advertisement|promo|promotion|banner|poster|campaign|signup|register|consultation|sponsor|activity|cartoon|illustration|mascot|sticker|emoji)(?:$|[\/_\-.])/i;
+const CHINESE_DECORATION = /(?:箭头|卡通|表情包|插画|吉祥物)/i;
+const EVIDENCE_IMAGE = /(?:图表|表格|名单|列表|排名|排行|统计|数据|架构图|拓扑图|示意图|流程图|参数|方案图|技术图|模型对比|负载曲线|能效曲线|table|chart|diagram|architecture|topology|ranking|ranked|metrics|schematic)/i;
+const PROMO_TEXT = /(?:扫码|报名|注册参会|合作洽谈|商务合作|广告|赞助|立即咨询|点击了解|活动海报|大会报名|会议报名|展会报名|扫码报名|扫码关注|扫码咨询|长按识别)/i;
+const TINY_IMAGE = (value: string | undefined) => !!value && /^\d{1,2}$/.test(value.trim());
+
+function imageIdentity(src: string): string {
+  try {
+    const url = new URL(src);
+    // Query strings commonly contain cache-busters, signatures and tracking. The path identifies
+    // the same editorial image while avoiding a fetch just to compare its pixels.
+    return `${url.hostname.toLowerCase()}${url.pathname.replace(/\/{2,}/g, "/")}`.replace(/\/$/, "");
+  } catch {
+    return src.split(/[?#]/, 1)[0]!.toLowerCase();
+  }
+}
+
+/** Keep article evidence and useful diagrams; discard repeated, decorative and obvious campaign art. */
+function cleanArticleImages(html: string): string {
+  if (!/<img\b/i.test(html)) return html;
+  const $ = cheerio.load(html, null, false);
+  const seen = new Set<string>();
+  $("img").each((_, el) => {
+    const img = $(el);
+    const src = img.attr("src") ?? "";
+    const metadata = [src, img.attr("alt"), img.attr("title")].filter(Boolean).join(" ");
+    const dimensions = [img.attr("width"), img.attr("height")];
+    const nearby = img.parent().text() + " " + img.parent().prev().text() + " " + img.parent().next().text();
+    const identity = imageIdentity(src);
+    const animated = /\.gif(?:$|[?#])/i.test(src) || /^data:image\/gif/i.test(src);
+    const informative = EVIDENCE_IMAGE.test(metadata);
+    const obviousDecoration = !informative && (CHINESE_DECORATION.test(metadata) || IMAGE_DECORATION.test(metadata) || PROMO_TEXT.test(`${metadata} ${nearby}`));
+    const tiny = dimensions.some(TINY_IMAGE);
+    if (!src || animated || obviousDecoration || tiny || seen.has(identity)) {
+      img.remove();
+      return;
+    }
+    seen.add(identity);
+  });
+  $("picture").each((_, el) => { if (!$(el).find("img").length) $(el).remove(); });
+  $("figure").each((_, el) => { if (!$(el).find("img, video").length && !$(el).text().trim()) $(el).remove(); });
+  return $.html();
 }
 
 const BLOCK_TAGS = new Set(["p", "h2", "h3", "h4", "h5", "ul", "ol", "li", "blockquote", "pre", "table", "figure", "hr", "dl", "picture", "video"]);

@@ -45,7 +45,6 @@ export const SIDEBAR: Array<{ title: string; items: NavItem[] }> = [
     items: [
       { to: "/agent", label: "Agent 接入", icon: IconPlug },
       { to: "/about", label: "关于", icon: IconHeart },
-      { to: "/changelog", label: "更新日志", icon: IconHistory, changelog: true },
       { to: "/feedback", label: "反馈", icon: IconMessage },
     ],
   },
@@ -78,5 +77,5 @@ export const TABS: Tab[] = [
   { key: "hot", to: "/hot", label: "热点", icon: IconFlame },
   { key: "daily", to: "/daily", label: "日报", icon: IconDoc },
   ...(FEATURES.leaderboard ? [{ key: "leaderboard" as const, to: "/leaderboard", label: "模型榜", icon: IconChart }] : []),
-  { key: "me", to: "/more", label: "我的", icon: IconUser, changelog: true },
+  { key: "me", to: "/more", label: "我的", icon: IconUser },
 ];

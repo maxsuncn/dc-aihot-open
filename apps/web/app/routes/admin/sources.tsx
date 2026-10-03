@@ -1,11 +1,13 @@
+import { useEffect, useState } from "react";
+import { useAdminAction } from "../../features/admin/action";
 import { SITE } from "@aihot/industry/site";
 import { Form, Link, useNavigate, useSearchParams } from "react-router";
 import type { Route } from "./+types/sources";
-import type { AdminSources } from "@aihot/contracts/admin";
+import type { AdminSources, AdminSourceRow } from "@aihot/contracts/admin";
 import { adminGet } from "../../lib/admin.server";
 import { num } from "../../features/admin/format";
 import { HEALTH_LABEL, KIND_LABEL, MODE_LABEL } from "../../features/admin/labels";
-import { AdminPage, Badge, ButtonLink, Card, DataTable, Dot, FilterChips, healthTone, Input, Pager, Select, Stat, Time } from "../../features/admin/ui";
+import { AdminPage, Badge, Button, ButtonLink, Card, ReasonDialog, DataTable, Dot, FilterChips, healthTone, Input, Pager, Select, Stat, Time } from "../../features/admin/ui";
 
 
 
@@ -20,6 +22,21 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
   const { rows, totals, page } = loaderData;
   const [sp] = useSearchParams();
   const navigate = useNavigate();
+  const { run, pending } = useAdminAction();
+  const [deleting, setDeleting] = useState<AdminSourceRow | null>(null);
+  const focusId = sp.get("focus");
+  useEffect(() => {
+    if (!focusId) return;
+    const row = Array.from(document.querySelectorAll<HTMLTableRowElement>("[data-row-key]"))
+      .find((candidate) => candidate.dataset.rowKey === focusId);
+    row?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusId, rows]);
+  const sourceHref = (id: string) => {
+    const from = new URLSearchParams(sp);
+    from.delete("focus");
+    const query = from.toString();
+    return `/admin/sources/${encodeURIComponent(id)}${query ? `?from=${encodeURIComponent(query)}` : ""}`;
+  };
   return (
     <AdminPage
       title="信源"
@@ -62,14 +79,15 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
         <DataTable
           rows={rows}
           rowKey={(r) => r.id}
-          onRowClick={(r) => navigate(`/admin/sources/${encodeURIComponent(r.id)}`)}
+          highlightKey={focusId}
+          onRowClick={(r) => navigate(sourceHref(r.id))}
           columns={[
             {
               key: "name",
               label: "信源",
               render: (r) => (
                 <div className="min-w-[220px]">
-                  <Link to={`/admin/sources/${encodeURIComponent(r.id)}`} className="font-medium text-ink hover:text-accent" onClick={(e) => e.stopPropagation()}>
+                  <Link to={sourceHref(r.id)} className="font-medium text-ink hover:text-accent" onClick={(e) => e.stopPropagation()}>
                     {r.name}
                   </Link>
                   <div className="font-mono text-[11.5px] text-ink-4">{r.id}</div>
@@ -104,10 +122,51 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
             { key: "interval", label: "频率", align: "right", render: (r) => `${r.interval_minutes} 分` },
             { key: "items", label: "7 天条目", align: "right", render: (r) => num(r.items_7d) },
             { key: "sel", label: "30 天精选", align: "right", render: (r) => num(r.selected_30d) },
+            {
+              key: "actions",
+              label: "操作",
+              className: "whitespace-nowrap",
+              render: (r) => (
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="sm"
+                    aria-pressed={r.site_fulltext}
+                    aria-label={`站内可展示全文${r.site_fulltext ? "已开启" : "已关闭"}`}
+                    busy={pending === `fulltext:${r.id}`}
+                    onClick={() => run("PATCH", `/api/admin/sources/${encodeURIComponent(r.id)}`, {
+                      patch: { site_fulltext: !r.site_fulltext },
+                      version: r.updated_at,
+                      reason: "从信源列表切换站内全文展示",
+                    }, { label: `fulltext:${r.id}`, success: r.site_fulltext ? "已关闭站内全文展示" : "已开启站内全文展示" })}
+                  >
+                    全文{r.site_fulltext ? "开" : "关"}
+                  </Button>
+                  <Button size="sm" tone="danger" onClick={() => setDeleting(r)}>删除</Button>
+                </div>
+              ),
+            },
           ]}
         />
       </Card>
       <Pager page={page} hasMore={rows.length === 100} />
+      <ReasonDialog
+        open={!!deleting}
+        title="删除订阅源"
+        description={deleting ? `确认删除“${deleting.name}”？系统将停止后续采集并从信源列表移除，已采集文章和历史记录会保留。` : undefined}
+        confirmLabel="删除订阅源"
+        danger
+        busy={pending === "delete-source"}
+        onClose={() => setDeleting(null)}
+        onSubmit={async (reason) => {
+          if (!deleting) return false;
+          const result = await run("DELETE", `/api/admin/sources/${encodeURIComponent(deleting.id)}`, { reason }, {
+            label: "delete-source",
+            success: "订阅源已删除，历史内容已保留",
+          });
+          if (!result) return false;
+          setDeleting(null);
+        }}
+      />
     </AdminPage>
   );
 }

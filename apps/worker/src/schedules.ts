@@ -63,10 +63,10 @@ export const SCHEDULES: Scheduled[] = [
     : []),
   ...(collecting
     ? [
-        { name: "sources.schedule", cron: "* * * * *", run: () => scheduleDueSources() },
+        { name: "sources.schedule", cron: "15 */2 * * *", run: () => scheduleDueSources() },
         { name: "sources.adapt-intervals", cron: "20 4 * * *", run: adaptIntervals },
         // WeChat official accounts (paid), each once per its interval.
-        { name: "sources.mp-reconcile", cron: "*/15 * * * *", run: () => scheduleMpReconcile() },
+        { name: "sources.mp-reconcile", cron: "15 */2 * * *", run: () => scheduleMpReconcile() },
       ]
     : []),
   // Codex reset monitor: every ten minutes as the pages state, and the last 48 hours read again once a day;

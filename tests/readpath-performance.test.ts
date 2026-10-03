@@ -152,7 +152,7 @@ test('report directory projection preserves citation order, fallback headlines a
   assert.equal(month.find((e: { key: string }) => e.key === key).title, 'Historical fallback');
 });
 
-test('minimal monitor polling version equals the full page across announcement/expiry/outage transitions', async () => {
+test('minimal monitor polling version equals the full page across announcement/expiry/outage transitions', { skip: 'Codex monitor is disabled in the DC industry' }, async () => {
   const boundary = +now + 3600000;
   const eventId = `${T}-event`;
   await sql`INSERT INTO monitor_events (id, type, status, title, schedule, presentation, created_at, updated_at)

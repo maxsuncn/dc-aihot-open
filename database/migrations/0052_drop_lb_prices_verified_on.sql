@@ -1,3 +1,4 @@
--- The day official prices were read is kept in each price file's name and note (database/seeds); the
--- stored copy on lb_prices was never shown.
-ALTER TABLE lb_prices DROP COLUMN IF EXISTS verified_on;
+-- DC fork: retain legacy tables and columns for backward-compatible upgrades.
+-- The current application no longer uses this state. Keep the upstream migration
+-- filename so future merges do not accidentally reintroduce destructive cleanup.
+SELECT 1;

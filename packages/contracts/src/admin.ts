@@ -46,6 +46,8 @@ export interface AdminAudit {
 // Sources
 
 export interface AdminSourceRow {
+  site_fulltext: boolean;
+  updated_at: Timestamp;
   id: string;
   name: string;
   kind: string;

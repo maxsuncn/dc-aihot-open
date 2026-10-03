@@ -1,7 +1,7 @@
 // RSS feeds. GUID = article id (isPermaLink=false), <link> = the site's page, pubDate = source
 // publication time. Summary feeds never carry content:encoded; full feeds inline bodies only for
 // sources that explicitly allow redistribution. Titles come from the site's name and categories.
-import { CATEGORY_LABELS, PUBLIC_API_CATEGORY_KEYS, type PublicApiCategoryKey } from "@aihot/contracts/taxonomy";
+import { CATEGORY_LABELS, normalizeCategoryKey, PUBLIC_API_CATEGORY_KEYS, type PublicApiCategoryKey } from "@aihot/contracts/taxonomy";
 import { SITE, withSubject } from "@aihot/industry/site";
 import { config } from "../config.ts";
 import { sql } from "../db.ts";
@@ -106,7 +106,7 @@ function itemXml(r: FeedRow, includeContent: boolean): string {
   const aihot = itemUrl(r.id);
   const summary = r.summary ?? "";
   const description = `<p>${escapeXml(summary)}</p>\n<p>🔗 <a href="${escapeXml(r.url)}">阅读原文</a></p>\n<p>via ${escapeXml(SITE.name)} · <a href="${aihot}">${aihot}</a></p>`;
-  const label = r.category ? CATEGORY_LABELS[r.category as PublicApiCategoryKey] : undefined;
+  const label = r.category ? CATEGORY_LABELS[normalizeCategoryKey(r.category)!] : undefined;
   const category = label ? `\n      <category>${escapeXml(label)}</category>` : "";
   let content = "";
   if (includeContent && r.syndicate) {
@@ -153,7 +153,7 @@ export async function itemFeed(kind: ItemFeedKind, category: PublicApiCategoryKe
   const m = feedMeta(kind);
   let meta = { title: m.title, description: m.description, homePath: m.homePath, selfPath: m.path, ttl: m.pollHintMinutes };
   if (category) {
-    const label = CATEGORY_LABELS[category] ?? category;
+    const label = CATEGORY_LABELS[normalizeCategoryKey(category)!] ?? category;
     meta = {
       title: includeContent ? `${SITE.name} — ${label}全文` : `${SITE.name} — ${label}`,
       description: includeContent

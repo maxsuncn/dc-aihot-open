@@ -56,7 +56,7 @@ const pages: Record<string, (cdn: string) => string> = {
     '(self.webpackChunk=self.webpackChunk||[]).push([["8557"],{57573:function(e,i,t){function h(e){return(0,n.jsxs)(a.Me,{children:[' +
     '(0,n.jsx)(m.H,{models:[{name:"Xiaomi MiMo-V2.6-Series",desc:"Frontier intelligence, all the modalities, built in public.",imageKey:"mimo-v2-5-pro",link:"/mimo-v2-6"}]}),' +
     '(0,n.jsx)(d.z,{sectionTitle:"Build with MiMo",experiences:[{title:"MiMo Gallery",link:"/mimo-gallery/",desc:"Step into the world created by MiMo-V2.6"}]}),' +
-    '(0,n.jsx)(r.K,{sectionId:"paper",sectionTitle:"Paper",blogs:l.G.slice().reverse().map(e=>({title:e.title,link:`/paper/${e.slug}`,desc:(0,l.V)(e.date,!1)}))}),' +
+    '(0,n.jsx)(r.K,{sectionId:"whitepaper",sectionTitle:"Paper",blogs:l.G.slice().reverse().map(e=>({title:e.title,link:`/paper/${e.slug}`,desc:(0,l.V)(e.date,!1)}))}),' +
     '(0,n.jsx)(r.K,{sectionTitle:"Blog",initialVisibleCount:8,blogs:[' +
     '{title:"Diagnosing and Mitigating Tool-Call Repetition in MiMo-V2.6",link:"/blog/mimo-v2-6-tool-call-repetition",desc:"A lesson from scaling RL: the reward blind spot in optimizing for correctness."},' +
     '{title:"Introducing MiMo-V2.6 series",link:"/mimo-v2-6",desc:"Frontier intelligence, all the modalities, built in public."},' +
@@ -196,6 +196,16 @@ test("hidden page parts are dropped whole, and a news page's closing blocks are 
   // A linked chart in a paragraph of its own survives, also when a translation is cleaned again.
   const chart = '<p><a href="https://example.org/chart.png"><img src="https://example.org/chart.png" alt="B200 prices"></a></p>';
   assert.ok(sanitizeBody(sanitizeBody(`<p>Prices doubled.</p>${chart}<p> </p>`)).includes('alt="B200 prices"'));
+  const images = sanitizeBody(
+    '<p><img src="https://cdn.example.org/site/diagram.png?size=large" alt="供电架构图"></p>' +
+      '<p><img src="https://cdn.example.org/site/diagram.png?cache=123" alt="供电架构图"></p>' +
+      '<p><img src="https://cdn.example.org/site/loading.gif" alt="loading"></p>' +
+      '<p><img src="https://cdn.example.org/site/event-poster.jpg" alt="活动海报"></p>' +
+      '<p><img src="https://cdn.example.org/site/ipo-table.jpg" alt="科技企业上市名单"></p>',
+  );
+  assert.equal((images.match(/<img\b/g) ?? []).length, 2, images);
+  assert.ok(images.includes("供电架构图") && images.includes("科技企业上市名单"), images);
+  assert.ok(!images.includes("loading.gif") && !images.includes("event-poster.jpg"), images);
   assert.equal(sanitizeBody("<p>Text.</p><p> <br></p><p><a href=\"https://example.org/\"></a></p>"), "<p>Text.</p>");
   // TechCrunch ends every article the same way.
   const article = "<p>MongoDB’s shares dropped by more than 17%.</p><h2>Topics</h2><p>More on the deal.</p><p>Subscribe to our plan to get the API.</p>";

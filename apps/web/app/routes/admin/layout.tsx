@@ -75,7 +75,7 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
         <nav className="flex-1 space-y-4 overflow-y-auto">
           {NAV.map((g) => (
             <div key={g.group}>
-              <div className="mb-1 px-3 text-[11.5px] font-medium tracking-wide text-ink-4">{g.group}</div>
+              <div className="mb-2 border-b border-line px-3 pb-2 text-[11.5px] font-semibold tracking-wide text-ink-3">{g.group}</div>
               <div className="space-y-0.5">
                 {g.items.map((i) => (
                   <NavItem key={i.to} to={i.to} label={i.label} count={i.count ? counts[i.count] : undefined} tone={i.tone} />
