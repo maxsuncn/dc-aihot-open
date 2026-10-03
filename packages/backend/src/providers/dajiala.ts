@@ -3,7 +3,7 @@
 // as the actual cost. Docs: https://s.apifox.cn/410674f9-f451-4b4f-957a-5f54f243bc83
 import { credential } from "../config.ts";
 import { guardedFetch } from "../lib/http-fetch.ts";
-import { paidRequest, ProviderRejectedError, type CallOutcome } from "./receipts.ts";
+import { assertAccepted, paidRequest, ProviderRejectedError, type CallOutcome } from "./receipts.ts";
 
 export interface MpPost {
   position: number;
@@ -61,8 +61,9 @@ export async function mpHistory(ghid: string, opts: { subject: string; window: s
         timeoutMs: 30_000,
         route: "direct",
       });
-      if (res.status === 429 || res.status >= 500) throw new ProviderRejectedError(`dajiala HTTP ${res.status}`, res.status, true);
-      const json = JSON.parse(res.text()) as { code?: number; msg?: string; cost_money?: number };
+      const text = res.text();
+      assertAccepted("dajiala", res.status, text);
+      const json = JSON.parse(text) as { code?: number; msg?: string; cost_money?: number };
       const cost = outcomeOf(json, "post_history");
       return { response: json, cost, usage: { posts: Array.isArray((json as { data?: unknown[] }).data) ? (json as { data: unknown[] }).data.length : 0 } };
     },
@@ -78,13 +79,15 @@ export async function mpArticle(articleUrl: string, opts: { subject: string; ide
     { service: "dajiala", purpose: "mp_article", subject: opts.subject, identity: { article: opts.identity }, requestSummary: { url: articleUrl } },
     async () => {
       const res = await guardedFetch(`${url}/fbmain/monitor/v3/article_detail?${new URLSearchParams({ url: articleUrl, key, mode: "1", verifycode: "" })}`, {
+        redirectPolicy: "same-origin",
         headers: { accept: "application/json" },
         timeoutMs: 30_000,
         maxBytes: 8 * 1024 * 1024,
         route: "direct",
       });
-      if (res.status === 429 || res.status >= 500) throw new ProviderRejectedError(`dajiala HTTP ${res.status}`, res.status, true);
-      const json = JSON.parse(res.text()) as { code?: number; msg?: string; cost_money?: number };
+      const text = res.text();
+      assertAccepted("dajiala", res.status, text);
+      const json = JSON.parse(text) as { code?: number; msg?: string; cost_money?: number };
       const cost = outcomeOf(json, "article_detail");
       return { response: json, cost, usage: { chars: String((json as { content?: string }).content ?? "").length } };
     },

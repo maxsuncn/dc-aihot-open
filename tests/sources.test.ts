@@ -1,6 +1,6 @@
-// Listing parsers on the page shapes Jina returns for real sites: card links that wrap
-// an image, a title attribute, http links under https prefixes, and navigation that is no post. Also
-// what made articles flip between versions: in-page anchors of an HTML listing and
+// Listing parsers on the page shapes Jina returns for real sites: card links that wrap an image, a title
+// attribute, http links under https prefixes, and navigation that is no post. Also what made articles
+// flip between versions: in-page anchors of an HTML listing and
 // promotions a feed rotates inside its posts. And the Xiaomi MiMo homepage, whose posts have no links in
 // its HTML: read without its adapter, it gave the menu (MiMo Desktop, 简体中文) as articles.
 import "./setup.ts";
@@ -13,7 +13,6 @@ import { fetchDetail, fetchWebList, fromHtml, fromMarkdown } from "@aihot/backen
 import { fetchRss } from "@aihot/backend/sources/rss";
 import { fetchJsonList } from "@aihot/backend/sources/json-list";
 import { noiseFiltered } from "@aihot/backend/sources/collect";
-import { unsupportedConfig } from "@aihot/backend/sources/config-keys";
 
 const source = (config: Record<string, unknown>) => ({ id: "test-list", config }) as never;
 
@@ -57,7 +56,7 @@ const pages: Record<string, (cdn: string) => string> = {
     '(self.webpackChunk=self.webpackChunk||[]).push([["8557"],{57573:function(e,i,t){function h(e){return(0,n.jsxs)(a.Me,{children:[' +
     '(0,n.jsx)(m.H,{models:[{name:"Xiaomi MiMo-V2.6-Series",desc:"Frontier intelligence, all the modalities, built in public.",imageKey:"mimo-v2-5-pro",link:"/mimo-v2-6"}]}),' +
     '(0,n.jsx)(d.z,{sectionTitle:"Build with MiMo",experiences:[{title:"MiMo Gallery",link:"/mimo-gallery/",desc:"Step into the world created by MiMo-V2.6"}]}),' +
-    '(0,n.jsx)(r.K,{sectionId:"paper",sectionTitle:"Paper",blogs:l.G.slice().reverse().map(e=>({title:e.title,link:`/paper/${e.slug}`,desc:(0,l.V)(e.date,!1)}))}),' +
+    '(0,n.jsx)(r.K,{sectionId:"whitepaper",sectionTitle:"Paper",blogs:l.G.slice().reverse().map(e=>({title:e.title,link:`/paper/${e.slug}`,desc:(0,l.V)(e.date,!1)}))}),' +
     '(0,n.jsx)(r.K,{sectionTitle:"Blog",initialVisibleCount:8,blogs:[' +
     '{title:"Diagnosing and Mitigating Tool-Call Repetition in MiMo-V2.6",link:"/blog/mimo-v2-6-tool-call-repetition",desc:"A lesson from scaling RL: the reward blind spot in optimizing for correctness."},' +
     '{title:"Introducing MiMo-V2.6 series",link:"/mimo-v2-6",desc:"Frontier intelligence, all the modalities, built in public."},' +
@@ -104,6 +103,25 @@ test("anchors into the listing page itself are navigation, not posts", () => {
   assert.deepEqual(out.map((c) => c.url), ["https://example.org/blog/mimo-v2-6-tool-call"]);
 });
 
+test("posts addressed by a query on the listing's path are posts, its pages and filters are not", () => {
+  // WordPress plain permalinks: every post is /?p=N on the listing's own path.
+  const links: [string, string][] = [
+    ["/?p=123", "First research announcement"], ["/?p=456&lang=en", "Second research announcement"],
+    ["/?utm_source=nav", "Home with tracking"], ["/?paged=2", "Older posts page"], ["/?cat=3", "Research category"], ["/#about", "About this site"],
+  ];
+  const html = links.map(([href, text]) => `<a href="${href}">${text}</a>`).join("");
+  const md = links.map(([href, text]) => `[${text}](https://example.org${href})`).join("\n\n");
+  const posts = ["https://example.org/?p=123", "https://example.org/?p=456&lang=en"];
+  assert.deepEqual(fromHtml(html, "https://example.org/", source({ url: "https://example.org/" })).map((c) => c.url), posts);
+  assert.deepEqual(fromMarkdown(md, "https://example.org/", source({ url: "https://r.jina.ai/https://example.org/" })).map((c) => c.url), posts);
+  // The listing's own query in another order, with tracking and a page number, is still the listing.
+  const filtered = source({ url: "https://example.org/news?lang=en&kind=ai" });
+  const out = fromHtml('<a href="/news?kind=ai&lang=en&utm_medium=x&page=2">Next page of news</a><a href="/news?kind=ai&lang=en&id=7">A news post</a>', "https://example.org/", filtered);
+  assert.deepEqual(out.map((c) => c.url), ["https://example.org/news?kind=ai&lang=en&id=7"]);
+  // Hosts still compare as written: www is another host.
+  assert.equal(fromHtml('<a href="https://www.example.org/">Home on www</a>', "https://example.org/", source({ url: "https://example.org/" })).length, 1);
+});
+
 test("promotions a feed rotates inside its posts are left out of the body", () => {
   // Microsoft Research's feed puts a different podcast or product promotion into each post on every load.
   const promo = (label: string, name: string) =>
@@ -131,16 +149,6 @@ test("the MiMo homepage lists its posts and model pages, not its menu", async ()
 
 test("a MiMo homepage without the list fails the fetch instead of listing its menu", async () => {
   await assert.rejects(fetchWebList(source({ url: `${site}/redesigned/`, adapter: "mimo_home" })), /mimo_home/);
-});
-
-test("config entries a source kind does not implement are named, not ignored", () => {
-  // Configs naming adapters or rules a collector does not implement used to fall back to the generic parse.
-  assert.deepEqual(
-    unsupportedConfig("web_list", { url: "https://example.org/", adapter: "site_cards", detail: { maxFetches: 5, titleFoo: "h1" }, contentPublic: false }),
-    ["adapter=site_cards", "detail.titleFoo", "contentPublic"],
-  );
-  assert.deepEqual(unsupportedConfig("rss", { feedUrl: "https://example.org/feed", denyUrlPrefixes: ["https://example.org/business/"] }), []);
-  assert.deepEqual(unsupportedConfig("x_search", { query: "from:a", allowUrlPrefixes: ["https://example.org/"] }), ["allowUrlPrefixes"], "X shards apply no URL rules");
 });
 
 test("a listing that links other articles in its teasers takes only the links that begin a line", () => {

@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { SITE } from "@aihot/industry/site";
 import { FEATURES } from "@aihot/industry/features";
+import { PUBLIC_INTERFACE_VERSION } from "@aihot/contracts/http-policy";
 import { CATEGORY_KEYS } from "@aihot/contracts/taxonomy";
 import { REPO_ROOT, config } from "@aihot/backend/config";
 import { applyPublicHeaders, sendTextWithEtag } from "../http/respond.ts";
@@ -86,14 +87,15 @@ function manifest() {
   };
 }
 
-/** The OpenAPI document with this deployment's name, address and categories. */
+/** The OpenAPI document with this deployment's name, address and categories, and the public interface version. */
 let openApi: string | null = null;
 async function openApiJson(): Promise<string> {
   if (openApi) return openApi;
   const raw = (await readFile(path.join(REF, "public-v1.openapi.json"), "utf8"))
-    .replaceAll("{{siteName}}", SITE.name)
-    .replaceAll("{{siteUrl}}", config.siteUrl)
-    .replaceAll("{{categoryList}}", CATEGORY_KEYS.join(", "));
+    .replaceAll("{{version}}", PUBLIC_INTERFACE_VERSION)
+    .replaceAll("{{siteName}}", JSON.stringify(SITE.name).slice(1, -1))
+    .replaceAll("{{siteUrl}}", JSON.stringify(config.siteUrl).slice(1, -1))
+    .replaceAll("{{categoryList}}", JSON.stringify(CATEGORY_KEYS.join(", ")).slice(1, -1));
   const doc = JSON.parse(raw) as { paths: Record<string, unknown>; components?: { parameters?: Record<string, { schema?: { enum?: string[] } }> } };
   // Categories follow the industry pack.
   const walk = (node: unknown) => {
@@ -103,7 +105,7 @@ async function openApiJson(): Promise<string> {
     for (const v of Object.values(o)) walk(v);
   };
   walk(doc);
-  if (!FEATURES.codexResetMonitor) for (const p of Object.keys(doc.paths)) if (p.startsWith("/api/v1/codex-resets")) delete doc.paths[p];
+  if (!FEATURES.codexResetMonitor) for (const p of Object.keys(doc.paths)) if (p.startsWith("/api/v1/codex-resets") || p === "/api/v1/agent/codex-resets") delete doc.paths[p];
   openApi = JSON.stringify(doc, null, 2);
   return openApi;
 }
@@ -122,7 +124,8 @@ export function registerStatic(app: FastifyInstance) {
   app.get("/llms.txt", async (req, reply) => {
     const text = llmsTxt(await loadLlmsAvailability());
     applyPublicHeaders(reply, { cors: false });
-    return sendTextWithEtag(req, reply, text, { etagPrefix: "llms", cacheControl: "public, s-maxage=3600, stale-while-revalidate=86400", contentType: "text/plain; charset=utf-8" });
+    // Cached like /openapi-v1.json: a release that adds an ability is described everywhere within minutes.
+    return sendTextWithEtag(req, reply, text, { etagPrefix: "llms", cacheControl: "public, max-age=300, stale-while-revalidate=3600", contentType: "text/plain; charset=utf-8" });
   });
 
   app.get("/robots.txt", (req, reply) => sendTextWithEtag(req, reply, robotsTxt(), { etagPrefix: "robots", cacheControl: "public, max-age=3600", contentType: "text/plain; charset=utf-8" }));

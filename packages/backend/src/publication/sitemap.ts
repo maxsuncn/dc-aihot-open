@@ -2,21 +2,17 @@
 // the latest 500 stories, leaderboard pages and indexable items. Cached ~5 minutes and rebuilt in the
 // background after that (crawlers get the previous copy meanwhile); if the database fails, the last
 // successful sitemap is served (never an empty one). Bounded.
-import { FEATURES } from "@aihot/industry/features";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { FEATURES } from "@aihot/industry/features";
 import { config } from "../config.ts";
 import { sql } from "../db.ts";
 import { cached } from "../lib/cache.ts";
 import { escapeXml } from "../lib/text.ts";
 import { siteUrl } from "./links.ts";
-import { leaderboardUrls } from "../leaderboard/read.ts";
+import { evidenceCondition, listedCondition, selectedCondition } from "./scope.ts";
+import { leaderboardDetailUrls } from "../leaderboard/read.ts";
 import { topicPageCounts } from "./topics.ts";
-
-async function leaderboardDetailUrls(): Promise<string[]> {
-  const fixed = new Set(["/leaderboard", "/leaderboard/sources", "/leaderboard/rules"]);
-  return (await leaderboardUrls()).filter((u) => !fixed.has(u) && !u.startsWith("/leaderboard/category/"));
-}
 
 const MAX_URLS = 45_000;
 const TTL_MS = 5 * 60 * 1000;
@@ -33,7 +29,7 @@ interface Entry {
 
 async function build(): Promise<string> {
   const entries: Entry[] = [];
-  const [latestItem] = await sql<{ t: Date | null }[]>`SELECT max(timeline_at) AS t FROM publications WHERE visibility = 'public' AND selected`;
+  const [latestItem] = await sql<{ t: Date | null }[]>`SELECT max(p.timeline_at) AS t FROM publications p WHERE ${selectedCondition(new Date())}`;
   const [latestDaily] = await sql<{ key: string | null; t: Date | null }[]>`SELECT max(key) AS key, max(generated_at) AS t FROM reports WHERE kind = 'daily'`;
   const now = latestItem?.t ?? new Date();
   entries.push(
@@ -63,16 +59,16 @@ async function build(): Promise<string> {
   for (const r of reports) entries.push({ loc: `/${r.kind}/${r.key}`, lastmod: r.generated_at, changefreq: r.kind === "daily" ? "never" : "monthly", priority: r.kind === "daily" ? 0.6 : 0.6 });
   for (const t of await topicPageCounts()) {
     if (!t.indexable) continue;
-    entries.push({ loc: `/topics/${t.slug}`, lastmod: t.latest, changefreq: "daily", priority: 0.6 });
-    for (let p = 2; p <= t.pages; p++) entries.push({ loc: `/topics/${t.slug}/page/${p}`, lastmod: t.latest, changefreq: "weekly", priority: 0.3 });
+    entries.push({ loc: `/topics/${t.slug}`, lastmod: t.changedAt, changefreq: "daily", priority: 0.6 });
+    for (let p = 2; p <= t.pages; p++) entries.push({ loc: `/topics/${t.slug}/page/${p}`, lastmod: t.changedAt, changefreq: "weekly", priority: 0.3 });
   }
-  // Stories with reports of their own; pages that only gather reports grouped elsewhere (imported story
-  // levels, regrouped history) are reachable but not listed.
+  // Stories with listed evidence of their own; pages that only gather reports grouped elsewhere (imported
+  // story levels, regrouped history) or only mention facts are reachable but not listed.
   const stories = await sql<{ public_id: string; latest_at: Date | null }[]>`
     SELECT public_id::text, latest_at FROM stories WHERE merged_into IS NULL AND EXISTS (
       SELECT 1 FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN publications p ON p.article_id = fa.article_id
-      WHERE f.story_id = stories.id AND fa.role IN ('primary', 'report') AND p.visibility = 'public' AND p.eligible)
-    ORDER BY latest_at DESC NULLS LAST LIMIT 500`;
+      WHERE f.story_id = stories.id AND ${evidenceCondition()} AND ${listedCondition(new Date())})
+    ORDER BY latest_at DESC NULLS LAST, id DESC LIMIT 500`;
   for (const s of stories) entries.push({ loc: `/story/${s.public_id}`, lastmod: s.latest_at, changefreq: "daily", priority: 0.5 });
   // Model pages exist only for models on a public top-30 board; source pages for every registered source.
   if (FEATURES.leaderboard) for (const loc of await leaderboardDetailUrls()) entries.push({ loc, changefreq: "weekly", priority: 0.4 });

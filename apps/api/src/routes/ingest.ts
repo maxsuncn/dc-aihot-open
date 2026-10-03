@@ -1,10 +1,9 @@
-// External collection scripts push items here (docs/sources.md). They use the ingest
-// token (never an admin session) and their own rate limit.
+// External collection scripts push items here (docs/sources.md). They use the ingest token (never an
+// admin session) and their own rate limit, kept in the process: no proxy in front limits it.
 import { timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { credential } from "@aihot/backend/config";
 import { IngestError, ingestItems } from "@aihot/backend/ingest/items";
-
 
 const PLACEHOLDER = /^(|changeme|change-me|placeholder|xxx+|todo|test|dev|your[-_]?token.*)$/i;
 

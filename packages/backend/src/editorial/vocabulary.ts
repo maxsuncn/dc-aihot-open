@@ -1,6 +1,6 @@
 // Tag normalization over the industry pack's vocabulary (industry/taxonomy.ts), which the topics
 // (industry/topics.json) are built on.
-import { CATEGORIES, CATEGORY_TAGS, DEFAULT_CATEGORY_TAG, ENTITY_TAGS, TAG_SYNONYMS, TOPIC_TAGS } from "@aihot/industry/taxonomy";
+import { CATEGORIES, ENTITIES, CATEGORY_TAGS, DEFAULT_CATEGORY_TAG, ENTITY_TAGS, RELEASE, TAG_SYNONYMS, TOPIC_TAGS } from "@aihot/industry/taxonomy";
 
 export { CATEGORY_BY_ITEM_TYPE, CATEGORY_TAGS, ENTITIES, ENTITY_TAGS, ITEM_TYPES, TOPIC_TAGS } from "@aihot/industry/taxonomy";
 
@@ -27,3 +27,15 @@ export function normalizeTags(v: unknown, opts: { max?: number; fallbackCategory
 
 /** The category guide the structure step reads: one line per category. */
 export const CATEGORY_GUIDE = CATEGORIES.map((c) => `- ${c.key}（${c.label}）：${c.guide}`).join("\n");
+
+/** The industry's headline launch (RELEASE): narrower than its category, which also holds prices and benchmarks. */
+export const isRelease = (category: string | null, tags: readonly string[]) => RELEASE !== null && category === RELEASE.category && tags.includes(RELEASE.tag);
+
+const key = (value: string) => value.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, "");
+/** Exact entity/alias only: mentions embedded in a sentence are not ownership. */
+export function entityIdentity(value: string | null | undefined): string | null {
+  if (!value?.trim()) return null;
+  const normalized = key(value);
+  const matches = Object.entries(ENTITIES).filter(([id, entity]) => [id, entity.name, ...entity.aliases, ...(entity.otherNames ?? [])].some((alias) => key(alias) === normalized));
+  return matches.length > 1 ? null : matches[0]?.[0] ?? null;
+}

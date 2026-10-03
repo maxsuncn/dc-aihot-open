@@ -1,3 +1,4 @@
+import { TOPIC_TAGS, ENTITY_TAGS } from "@aihot/industry/taxonomy";
 // Display-only article structure. The stored source body remains unchanged and page reads stay model-free.
 import * as cheerio from "cheerio";
 
@@ -11,7 +12,8 @@ function escapeRegExp(value: string): string {
 }
 
 function readingTerms(tags: string[]): string[] {
-  return [...new Set(tags.map((tag) => tag.replace(/^#+/, "").trim()))]
+  const known = new Set<string>([...TOPIC_TAGS, ...ENTITY_TAGS]);
+  return [...new Set(tags.filter((tag) => known.has(tag)).map((tag) => tag.replace(/^#+/, "").trim()))]
     .filter((tag) => tag && !CATEGORY_TAGS.has(tag) && (/[\u3400-\u9fff]{2}/u.test(tag) || /^[A-Z0-9]{2,8}$/u.test(tag) || tag.length >= 4))
     .sort((a, b) => b.length - a.length)
     .slice(0, 5);

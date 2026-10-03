@@ -1,7 +1,7 @@
 // Feishu delivery. Two separate apps: the login app (admin OAuth) and the message app (internal
 // feedback chat, operations alert chat, image upload). Content groups use custom bot webhooks.
 // Alerts and feedback never go to content groups, and content never goes to internal chats.
-// Everything outward is off unless explicitly enabled (development and parallel runs stay silent).
+// Everything outward is off unless explicitly enabled (development and tests stay silent).
 import { readFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { beijingDate, beijingTime } from "@aihot/contracts/time";
@@ -31,12 +31,18 @@ async function tenantToken(): Promise<string> {
   return tokenCache.token;
 }
 
+/** Feishu's answers that the picture itself is unacceptable (bad image, too large, empty): trying again cannot help. */
+const IMAGE_REFUSED = new Set([234001, 234006, 234010, 234011]);
+
+class ImageRefusedError extends Error {}
+
 async function uploadImage(data: Buffer, filename: string): Promise<string> {
   const form = new FormData();
   form.set("image_type", "message");
   form.set("image", new Blob([new Uint8Array(data)]), filename);
   const res = await fetch(`${API}/im/v1/images`, { method: "POST", headers: { authorization: `Bearer ${await tenantToken()}` }, body: form, signal: AbortSignal.timeout(30_000) });
   const json = (await res.json()) as { code: number; data?: { image_key: string }; msg?: string };
+  if (IMAGE_REFUSED.has(json.code)) throw new ImageRefusedError(`feishu upload: ${json.msg}`);
   if (json.code !== 0 || !json.data) throw new Error(`feishu upload: ${json.msg}`);
   return json.data.image_key;
 }
@@ -53,7 +59,7 @@ async function sendToChat(chatId: string, msgType: "text" | "post" | "interactiv
   return json.data?.message_id ?? "";
 }
 
-// ---- Operations alerts ------------------------------------------------------------------------------
+// Operations alerts
 // Read by the site owner, not an engineer (operations/alerts.ts): what readers see, whether it heals,
 // what the owner must do, and a last line of detail for the AI or engineer it is forwarded to.
 
@@ -145,8 +151,9 @@ async function screenshotFor(fb: { id: number; screenshot_key: string | null; cr
     await unlink(file).catch(() => {});
     return { imageKey, note: null };
   } catch (error) {
-    // The forwarding sweep tries again; after a day the text goes without it.
-    if (Date.now() - fb.created_at.getTime() < SCREENSHOT_GIVE_UP_MS) throw error;
+    // The forwarding sweep tries again; after a day, or at once when Feishu refuses the picture itself,
+    // the text goes without it.
+    if (!(error instanceof ImageRefusedError) && Date.now() - fb.created_at.getTime() < SCREENSHOT_GIVE_UP_MS) throw error;
     await sql`UPDATE feedback SET screenshot_key = 'gone:upload' WHERE id = ${fb.id}`;
     await unlink(file).catch(() => {});
     return { imageKey: null, note: "（截图未能上传，已删除）" };
@@ -184,7 +191,7 @@ export async function forwardFeedbackToFeishu(id: number): Promise<"sent" | "dis
 }
 
 /** Custom-bot webhook for content groups (selected cards, reset pushes). */
-export async function postWebhook(url: string, card: unknown): Promise<{ ok: boolean; status: number; body: string }> {
+export async function postWebhook(url: string, card: unknown): Promise<{ status: "sent" | "failed" | "unknown"; body: string }> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -192,12 +199,14 @@ export async function postWebhook(url: string, card: unknown): Promise<{ ok: boo
     signal: AbortSignal.timeout(15_000),
   });
   const body = await res.text();
-  let ok = res.ok;
+  // A successful HTTP transport is not an acknowledgement: proxies can return HTML or empty JSON.
+  let status: "sent" | "failed" | "unknown" = res.status >= 400 && res.status < 500 ? "failed" : "unknown";
   try {
-    const json = JSON.parse(body) as { code?: number; StatusCode?: number };
-    ok = ok && (json.code === 0 || json.StatusCode === 0);
+    const json = JSON.parse(body) as { code?: number; StatusCode?: number } | null;
+    const code = json?.code ?? json?.StatusCode;
+    if (res.ok && typeof code === "number") status = code === 0 ? "sent" : "failed";
   } catch {
     // non-JSON body
   }
-  return { ok, status: res.status, body: body.slice(0, 500) };
+  return { status, body: body.slice(0, 500) };
 }

@@ -4,8 +4,7 @@
 import type { z } from "zod";
 import { config, credential } from "../config.ts";
 import { sha256 } from "../lib/ids.ts";
-import { completeReceipt, paidRequest, ProviderRejectedError, rejectReceivedResponse } from "./receipts.ts";
-import { sql } from "../db.ts";
+import { assertAccepted, paidRequest, ProviderRejectedError, rejectReceivedResponse } from "./receipts.ts";
 
 export interface ModelSpec {
   key: string;
@@ -109,7 +108,13 @@ export interface ChatJsonResult<T> {
   usage: Record<string, unknown> | null;
 }
 
-export class ModelOutputError extends Error {}
+export class ModelOutputError extends Error {
+  readonly receiptId: number | null;
+  constructor(message: string, receiptId: number | null = null) {
+    super(message);
+    this.receiptId = receiptId;
+  }
+}
 
 function extractJson(text: string): unknown {
   let t = text.trim();
@@ -148,7 +153,7 @@ export function escapeControlCharsInStrings(json: string): string {
 
 function isConnectFailure(error: unknown): boolean {
   const code = (error as { cause?: { code?: string } })?.cause?.code ?? (error as { code?: string })?.code;
-  return ["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "UND_ERR_CONNECT_TIMEOUT", "ECONNRESET_BEFORE_SEND", "CERT_HAS_EXPIRED"].includes(code ?? "");
+  return ["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "UND_ERR_CONNECT_TIMEOUT", "CERT_HAS_EXPIRED"].includes(code ?? "");
 }
 
 export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): Promise<ChatJsonResult<z.infer<S>>> {
@@ -201,13 +206,11 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
         throw error;
       }
       const text = await res.text();
-      if (!res.ok) {
-        const retryable = res.status === 429 || res.status >= 500;
-        throw new ProviderRejectedError(`HTTP ${res.status}: ${text.slice(0, 500)}`, res.status, retryable);
-      }
+      assertAccepted(spec.service, res.status, text);
       let json: Record<string, unknown>;
       try {
         json = JSON.parse(text);
+        if (!json || typeof json !== "object" || Array.isArray(json)) throw new Error("Expected a response object");
       } catch {
         json = { unparsable: text.slice(0, 20000) };
       }
@@ -229,11 +232,7 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
   } catch (error) {
     // Unusable output: record it and let a later attempt pay for a fresh answer.
     await rejectReceivedResponse(receipt.receiptId, `unusable output: ${String(error).slice(0, 500)}`);
-    throw new ModelOutputError(`Model ${opts.model} returned unusable output for ${opts.subject}: ${String(error).slice(0, 300)}`);
+    throw new ModelOutputError(`Model ${opts.model} returned unusable output for ${opts.subject}: ${String(error).slice(0, 300)}`, receipt.receiptId);
   }
   return { data: parsed, receiptId: receipt.receiptId, reused: receipt.reused, model: spec.key, usage: response.usage ?? null };
-}
-
-export async function markReceiptsCompleted(ids: number[]): Promise<void> {
-  for (const id of ids) await completeReceipt(sql, id);
 }

@@ -36,6 +36,7 @@ export const ABOUT = {
   weeklyLinkLabel: "留下邮箱订阅周刊",
   weeklyUrl: "https://quaily.com/maxtiger/",
   weeklyTail: "，每周 10 分钟在邮箱中阅读全球数据中心建设与运维的动态。",
+  copyright: `${SITE.name} 是聚合摘要和阅读索引，原文版权归各来源所有。更正、下架或调整展示方式请通过`,
   contact: "如果你在产业链里——技术、建设、投资，也欢迎加我的微信聊聊。合作、勘误、提供线索、八卦行业，都欢迎。",
   maker: null as null | {
     name: string;
@@ -48,4 +49,10 @@ export const ABOUT = {
 
 export function withSubject(noun: string): string {
   return /[A-Za-z0-9]$/.test(SITE.subject) ? `${SITE.subject} ${noun}` : `${SITE.subject}${noun}`;
+}
+
+/** “按主题看 AI”“往期 AI 日报”这类说法：行业词接在中文后面，英文词前加空格，中文词不加；noun 照 withSubject 接上。 */
+export function subjectAfter(text: string, noun?: string): string {
+  const gap = /^[A-Za-z0-9]/.test(SITE.subject) ? " " : "";
+  return `${text}${gap}${noun ? withSubject(noun) : SITE.subject}`;
 }

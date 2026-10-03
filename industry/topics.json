@@ -1,22 +1,272 @@
 {
   "exportedAt": "2026-09-29",
   "groups": [
-    { "key": "company", "name": "产业链玩家", "blurb": "跟踪业主、云厂商、运营商、设备商与行业组织的项目和经营动作" },
-    { "key": "field", "name": "技术与项目", "blurb": "跟进机房建设节点，以及电力、冷却、交付和运行中的工程问题" },
-    { "key": "genre", "name": "市场与规则", "blurb": "查看供需、资本、研究报告、政策标准和工程复盘" }
+    {
+      "key": "company",
+      "name": "产业链玩家",
+      "blurb": "跟踪业主、云厂商、运营商、设备商与行业组织的项目和经营动作"
+    },
+    {
+      "key": "field",
+      "name": "技术与项目",
+      "blurb": "跟进机房建设节点，以及电力、冷却、交付和运行中的工程问题"
+    },
+    {
+      "key": "genre",
+      "name": "市场与规则",
+      "blurb": "查看供需、资本、研究报告、政策标准和工程复盘"
+    }
   ],
   "topics": [
-    { "slug": "schneider-electric", "name": "Schneider Electric", "group": "company", "entityId": "schneider-electric", "tags": ["Schneider Electric", "entity:schneider-electric", "技术"], "definition": "施耐德电气的数据中心供配电、制冷、能效和数字化基础设施动态。", "related": ["power-and-cooling", "operations"] },
-    { "slug": "vertiv", "name": "Vertiv / 维谛", "group": "company", "entityId": "vertiv", "tags": ["Vertiv", "entity:vertiv", "技术"], "definition": "Vertiv 在数据中心电力、热管理、模块化建设与服务方面的公开动态。", "related": ["power-and-cooling", "projects"] },
-    { "slug": "nvidia", "name": "NVIDIA 与智算基础设施", "group": "company", "entityId": "nvidia", "tags": ["NVIDIA", "entity:nvidia", "AIDC/智算中心"], "definition": "NVIDIA 平台变化中与数据中心容量、机架功率、网络、供电和冷却直接相关的信号。", "related": ["aidc", "power-and-cooling"] },
-    { "slug": "china-idc-operators", "name": "中国 IDC 运营商", "group": "company", "tags": ["GDS", "Chindata", "IDC", "玩家", "项目"], "definition": "中国 IDC 运营商的容量、项目进展、客户、资本开支和运营变化。", "related": ["projects", "operations"] },
-    { "slug": "aidc", "name": "AIDC 与智算中心", "group": "field", "tags": ["AIDC/智算中心", "建设与交付", "资本开支", "AI工厂与高密度机架", "灰空间与模块化", "网络与光纤密度"], "definition": "智算基础设施的规划、机架功率密度、AI factory、grey/white space、AI pod、模块化建设、光纤密度与交付。", "related": ["power-and-cooling", "projects"] },
-    { "slug": "power-and-cooling", "name": "供配电、储能与液冷", "group": "field", "tags": ["技术", "供配电与储能", "制冷与液冷", "UPS", "储能/BESS", "HVDC/800V", "液冷/CDU", "制冷与热管理", "800VDC与HVDC", "并网与大型负荷", "源网荷储", "弧闪与直流安全", "冷却液与流体管理"], "definition": "从电网接入、变配电、UPS/BESS、800VDC/HVDC 与大型负荷，到机架供电、液冷、冷却液和热管理的系统变化。", "related": ["aidc", "operations"] },
-    { "slug": "projects", "name": "项目、建设与交付", "group": "field", "tags": ["项目", "建设与交付", "招标/EPC", "选址与规划", "调试与性能验证", "BIM与数字化交付", "选址与水资源"], "definition": "数据中心选址、接电与用水条件、审批、开工、招标、中标、施工、BIM/数字化协同、调试验证、扩建与投产。", "related": ["aidc", "market"] },
-    { "slug": "operations", "name": "运营、能效与可靠性", "group": "field", "tags": ["技术", "运营与能效", "PUE与能效", "数据中心运维", "可靠性与可用性", "DCOS与人才", "生命周期TCO"], "definition": "运行策略、容量、PUE/WUE、状态维护、预测性维护、故障复盘、安全、DCOS 人才和设施全生命周期能力。", "related": ["power-and-cooling", "research-reports"] },
-    { "slug": "market", "name": "市场、资本与供应链", "group": "genre", "tags": ["市场", "企业与市场", "供应链与设备", "订单与产能", "资本开支"], "definition": "行业供需、投资、订单、产能、成本、交付周期，以及影响数据中心建设与运维的产业链变化。", "related": ["projects", "aidc"] },
-    { "slug": "policy-and-standards", "name": "政策、能耗与标准", "group": "genre", "tags": ["标准与政策", "政策与标准", "PUE与能效", "绿电与电网"], "definition": "会改变数据中心选址、审批、能耗、电力、并网、绿电或运行要求的政策和标准。", "related": ["operations", "research-reports"] },
-    { "slug": "research-reports", "name": "行业报告、研报与白皮书", "group": "genre", "tags": ["白皮书", "行业报告", "研究报告", "研报", "研究与报告", "生命周期TCO", "选址与水资源", "供应链与交付周期"], "definition": "检索数据中心容量、成本、技术路线、可靠性、市场、能源、水资源和生命周期相关的行业报告、研究报告、研报与白皮书；保留样本、测算口径与适用边界。", "related": ["operations", "policy-and-standards"] },
-    { "slug": "engineering-practice", "name": "工程实践与事故复盘", "group": "genre", "tags": ["技术", "实践与观点", "事故与复盘", "数据中心运维"], "definition": "有明确场景、证据和适用边界的工程经验、故障复盘、维护和调试方法。", "related": ["operations", "power-and-cooling"] }
+    {
+      "slug": "schneider-electric",
+      "name": "Schneider Electric",
+      "group": "company",
+      "entityId": "schneider-electric",
+      "tags": [
+        "Schneider Electric",
+        "entity:schneider-electric",
+        "技术"
+      ],
+      "definition": "施耐德电气的数据中心供配电、制冷、能效和数字化基础设施动态。",
+      "related": [
+        "power-and-cooling",
+        "operations"
+      ]
+    },
+    {
+      "slug": "vertiv",
+      "name": "Vertiv / 维谛",
+      "group": "company",
+      "entityId": "vertiv",
+      "tags": [
+        "Vertiv",
+        "entity:vertiv",
+        "技术"
+      ],
+      "definition": "Vertiv 在数据中心电力、热管理、模块化建设与服务方面的公开动态。",
+      "related": [
+        "power-and-cooling",
+        "projects"
+      ]
+    },
+    {
+      "slug": "nvidia",
+      "name": "NVIDIA 与智算基础设施",
+      "group": "company",
+      "entityId": "nvidia",
+      "tags": [
+        "NVIDIA",
+        "entity:nvidia",
+        "AIDC/智算中心"
+      ],
+      "definition": "NVIDIA 平台变化中与数据中心容量、机架功率、网络、供电和冷却直接相关的信号。",
+      "related": [
+        "aidc",
+        "power-and-cooling"
+      ]
+    },
+    {
+      "slug": "china-idc-operators",
+      "name": "中国 IDC 运营商",
+      "group": "company",
+      "tags": [
+        "GDS",
+        "Chindata",
+        "IDC",
+        "玩家",
+        "项目"
+      ],
+      "definition": "中国 IDC 运营商的容量、项目进展、客户、资本开支和运营变化。",
+      "related": [
+        "projects",
+        "operations"
+      ]
+    },
+    {
+      "slug": "aidc",
+      "name": "AIDC 与智算中心",
+      "group": "field",
+      "tags": [
+        "AIDC/智算中心",
+        "建设与交付",
+        "资本开支",
+        "AI工厂与高密度机架",
+        "灰空间与模块化",
+        "网络与光纤密度"
+      ],
+      "definition": "智算基础设施的规划、机架功率密度、AI factory、grey/white space、AI pod、模块化建设、光纤密度与交付。",
+      "related": [
+        "power-and-cooling",
+        "projects"
+      ],
+      "chronicleTerms": [
+        "AIDC",
+        "智算",
+        "AI工厂",
+        "高密度机架"
+      ]
+    },
+    {
+      "slug": "power-and-cooling",
+      "name": "供配电、储能与液冷",
+      "group": "field",
+      "tags": [
+        "技术",
+        "供配电与储能",
+        "制冷与液冷",
+        "UPS",
+        "储能/BESS",
+        "HVDC/800V",
+        "液冷/CDU",
+        "制冷与热管理",
+        "800VDC与HVDC",
+        "并网与大型负荷",
+        "源网荷储",
+        "弧闪与直流安全",
+        "冷却液与流体管理"
+      ],
+      "definition": "从电网接入、变配电、UPS/BESS、800VDC/HVDC 与大型负荷，到机架供电、液冷、冷却液和热管理的系统变化。",
+      "related": [
+        "aidc",
+        "operations"
+      ],
+      "chronicleTerms": [
+        "供配电",
+        "UPS",
+        "HVDC",
+        "储能",
+        "液冷",
+        "冷却",
+        "制冷",
+        "热管理"
+      ]
+    },
+    {
+      "slug": "projects",
+      "name": "项目、建设与交付",
+      "group": "field",
+      "tags": [
+        "项目",
+        "建设与交付",
+        "招标/EPC",
+        "选址与规划",
+        "调试与性能验证",
+        "BIM与数字化交付",
+        "选址与水资源"
+      ],
+      "definition": "数据中心选址、接电与用水条件、审批、开工、招标、中标、施工、BIM/数字化协同、调试验证、扩建与投产。",
+      "related": [
+        "aidc",
+        "market"
+      ],
+      "chronicleTerms": [
+        "项目",
+        "建设",
+        "交付",
+        "开工",
+        "投产",
+        "扩建",
+        "招标",
+        "调试"
+      ]
+    },
+    {
+      "slug": "operations",
+      "name": "运营、能效与可靠性",
+      "group": "field",
+      "tags": [
+        "技术",
+        "运营与能效",
+        "PUE与能效",
+        "数据中心运维",
+        "可靠性与可用性",
+        "DCOS与人才",
+        "生命周期TCO"
+      ],
+      "definition": "运行策略、容量、PUE/WUE、状态维护、预测性维护、故障复盘、安全、DCOS 人才和设施全生命周期能力。",
+      "related": [
+        "power-and-cooling",
+        "research-reports"
+      ],
+      "chronicleTerms": [
+        "运维",
+        "能效",
+        "可靠性",
+        "PUE",
+        "WUE",
+        "维护",
+        "故障"
+      ]
+    },
+    {
+      "slug": "market",
+      "name": "市场、资本与供应链",
+      "group": "genre",
+      "tags": [
+        "市场",
+        "企业与市场",
+        "供应链与设备",
+        "订单与产能",
+        "资本开支"
+      ],
+      "definition": "行业供需、投资、订单、产能、成本、交付周期，以及影响数据中心建设与运维的产业链变化。",
+      "related": [
+        "projects",
+        "aidc"
+      ]
+    },
+    {
+      "slug": "policy-and-standards",
+      "name": "政策、能耗与标准",
+      "group": "genre",
+      "tags": [
+        "标准与政策",
+        "政策与标准",
+        "PUE与能效",
+        "绿电与电网"
+      ],
+      "definition": "会改变数据中心选址、审批、能耗、电力、并网、绿电或运行要求的政策和标准。",
+      "related": [
+        "operations",
+        "research-reports"
+      ]
+    },
+    {
+      "slug": "research-reports",
+      "name": "行业报告、研报与白皮书",
+      "group": "genre",
+      "tags": [
+        "白皮书",
+        "行业报告",
+        "研究报告",
+        "研报",
+        "研究与报告",
+        "生命周期TCO",
+        "选址与水资源",
+        "供应链与交付周期"
+      ],
+      "definition": "检索数据中心容量、成本、技术路线、可靠性、市场、能源、水资源和生命周期相关的行业报告、研究报告、研报与白皮书；保留样本、测算口径与适用边界。",
+      "related": [
+        "operations",
+        "policy-and-standards"
+      ]
+    },
+    {
+      "slug": "engineering-practice",
+      "name": "工程实践与事故复盘",
+      "group": "genre",
+      "tags": [
+        "技术",
+        "实践与观点",
+        "事故与复盘",
+        "数据中心运维"
+      ],
+      "definition": "有明确场景、证据和适用边界的工程经验、故障复盘、维护和调试方法。",
+      "related": [
+        "operations",
+        "power-and-cooling"
+      ]
+    }
   ]
 }

@@ -1,43 +1,19 @@
+import { useEffect, useState } from "react";
+import { useAdminAction } from "../../features/admin/action";
 import { SITE } from "@aihot/industry/site";
 import { Form, Link, useNavigate, useSearchParams } from "react-router";
-import { useEffect, useState } from "react";
 import type { Route } from "./+types/sources";
+import type { AdminSources, AdminSourceRow } from "@aihot/contracts/admin";
 import { adminGet } from "../../lib/admin.server";
 import { num } from "../../features/admin/format";
 import { HEALTH_LABEL, KIND_LABEL, MODE_LABEL } from "../../features/admin/labels";
-import { useAdminAction } from "../../features/admin/action";
-import { AdminPage, Badge, Button, ButtonLink, Card, DataTable, Dot, FilterChips, healthTone, Input, Pager, ReasonDialog, Select, Stat, Time } from "../../features/admin/ui";
+import { AdminPage, Badge, Button, ButtonLink, Card, ReasonDialog, DataTable, Dot, FilterChips, healthTone, Input, Pager, Select, Stat, Time } from "../../features/admin/ui";
 
-interface SourceRow {
-  id: string;
-  name: string;
-  kind: string;
-  tier: string;
-  participation_mode: string;
-  site_fulltext: boolean;
-  enabled: boolean;
-  health: string;
-  fail_count: number;
-  interval_minutes: number;
-  last_ok_at: string | null;
-  last_fetch_at: string | null;
-  last_error: string | null;
-  first_party: boolean;
-  next_fetch_at: string | null;
-  items_7d: number;
-  selected_30d: number;
-  updated_at: string;
-}
 
-interface SourcesData {
-  page: number;
-  rows: SourceRow[];
-  totals: { total: number; enabled: number; failing: number; degraded: number };
-}
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
-  return adminGet<SourcesData>(request, `/api/admin/sources${url.search}`);
+  return adminGet<AdminSources>(request, `/api/admin/sources${url.search}`);
 }
 
 export const meta: Route.MetaFunction = () => [{ title: `信源 · ${SITE.name} 后台` }];
@@ -47,7 +23,7 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
   const [sp] = useSearchParams();
   const navigate = useNavigate();
   const { run, pending } = useAdminAction();
-  const [deleting, setDeleting] = useState<SourceRow | null>(null);
+  const [deleting, setDeleting] = useState<AdminSourceRow | null>(null);
   const focusId = sp.get("focus");
   useEffect(() => {
     if (!focusId) return;

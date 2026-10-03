@@ -1,6 +1,7 @@
 // Web list pages: HTML with selectors, Markdown through Jina Reader, and Docusaurus changelogs.
 import * as cheerio from "cheerio";
 import { guardedFetch } from "../lib/http-fetch.ts";
+import { normalizeUrl } from "../lib/url.ts";
 import { collapseWhitespace, stripTags } from "../lib/text.ts";
 import { readable, type ExtractedBody } from "../content/extract.ts";
 import { sanitizeBody } from "../content/sanitize.ts";
@@ -9,23 +10,39 @@ import { FetchError, type Candidate, type SourceRow } from "./types.ts";
 
 const JINA_PREFIX = "https://r.jina.ai/";
 
+/** A time followed by its zone: "10:00Z", "10:00:00+08:00", "10:00:00 +0000", "10:00:00 GMT". */
+const EXPLICIT_ZONE = /\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?\s*(?:Z|[+-]\d{2}:?\d{2}|GMT|UTC)\b/i;
+
+function atOffset(y: string | number, mo: string | number, d: string | number, h: string | number, mi: string | number, s: string | number, utcOffset: string): Date | null {
+  const p = (n: string | number) => String(n).padStart(2, "0");
+  const t = Date.parse(`${y}-${p(mo)}-${p(d)}T${p(h)}:${p(mi)}:${p(s)}${utcOffset}`);
+  return Number.isFinite(t) ? new Date(t) : null;
+}
+
+/**
+ * A published date as a list page or article prints it. Date.parse is kept only where it reads the same
+ * on every host: a time with its zone, and an ISO date alone (UTC midnight). Anything else it would read
+ * in the server's local zone (UTC in Docker), so "2026-09-26 10:00" is read in the source's offset instead.
+ */
 export function parseLooseDate(value: string | null | undefined, utcOffset = "+08:00"): Date | null {
   if (!value) return null;
   const v = value.trim();
   if (!v) return null;
-  const direct = Date.parse(v);
-  if (Number.isFinite(direct) && /\d{4}/.test(v)) return new Date(direct);
-  // 2026-09-26 / 2026/09/26 / 2026年9月26日 (+ optional time), interpreted in the given offset.
-  const m = /(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})日?(?:\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(v);
+  if (EXPLICIT_ZONE.test(v) || /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    const direct = Date.parse(v);
+    if (Number.isFinite(direct) && /\d{4}/.test(v)) return new Date(direct);
+  }
+  // 2026-09-26 / 2026/09/26 / 2026-09-26T10:00 / 2026年9月26日 (+ optional time), interpreted in the given offset.
+  const m = /(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})日?(?:(?:T|\s*)(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(v);
   if (m) {
     const [, y, mo, d, h = "00", mi = "00", s = "00"] = m;
-    const iso = `${y}-${mo!.padStart(2, "0")}-${d!.padStart(2, "0")}T${h.padStart(2, "0")}:${mi}:${s}${utcOffset}`;
-    const t = Date.parse(iso);
-    return Number.isFinite(t) ? new Date(t) : null;
+    return atOffset(y!, mo!, d!, h, mi, s, utcOffset);
   }
-  // "Sep 26, 2026"
+  // "Sep 26, 2026": Date.parse reads it in the host's zone, so take its fields and place them in the offset.
   const en = Date.parse(v.replace(/(\d)(st|nd|rd|th)/, "$1"));
-  return Number.isFinite(en) ? new Date(en) : null;
+  if (!Number.isFinite(en)) return null;
+  const local = new Date(en);
+  return atOffset(local.getFullYear(), local.getMonth() + 1, local.getDate(), local.getHours(), local.getMinutes(), local.getSeconds(), utcOffset);
 }
 
 /** The datePublished of the page's structured data (JSON-LD, also inside @graph or embedded app state). */
@@ -65,10 +82,18 @@ export function allowed(url: string, source: SourceRow): boolean {
   return allow.length === 0 || allow.some((p) => target.startsWith(p));
 }
 
-/** A link back to the listing page itself (skip links, in-page anchors such as #paper, #blog). */
+/** Query keys that page or filter a listing. Other keys name a post (WordPress /?p=123). */
+const LISTING_PARAMS = /^(page|paged|cat|category|categories|tag|tags|label|labels|author|authors)$/i;
+
+/** A link back to the listing page itself (skip links, in-page anchors such as #paper, #blog, ?page=2). */
 function listingItself(url: string, listing: string): boolean {
-  const bare = (x: URL) => `${x.host}${x.pathname.replace(/\/$/, "")}`;
-  return bare(new URL(url)) === bare(new URL(listing));
+  const bare = (s: string) => {
+    const x = new URL(s);
+    const query = new URL(normalizeUrl(s) ?? s).searchParams;
+    for (const key of [...query.keys()]) if (LISTING_PARAMS.test(key)) query.delete(key);
+    return `${x.host}${x.pathname.replace(/\/$/, "")}?${query}`;
+  };
+  return bare(url) === bare(listing);
 }
 
 /**
@@ -100,7 +125,10 @@ async function fetchListingText(source: SourceRow): Promise<{ text: string; viaJ
   if (!url) throw new FetchError("url missing");
   if (url.startsWith(JINA_PREFIX)) {
     const target = url.slice(JINA_PREFIX.length);
-    const page = await jinaRead(target, { purpose: "source_listing", subject: `source:${source.id}`, cacheToleranceSeconds: source.config.cacheToleranceSeconds, perRead: true });
+    // A listing parsed with selectors asks Jina for the rendered HTML (a site our resolver cannot reach
+    // still gets its dates and titles from the markup); otherwise Jina's Markdown.
+    const format = source.config.parseMode === "html" ? "html" : undefined;
+    const page = await jinaRead(target, { purpose: "source_listing", subject: `source:${source.id}`, cacheToleranceSeconds: source.config.cacheToleranceSeconds, format, perRead: true });
     return { text: page.markdown, viaJina: true, base: source.config.baseUrl ?? target };
   }
   const res = await guardedFetch(url, { headers: { accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8" }, timeoutMs: 25_000 });
@@ -121,7 +149,9 @@ export function fromMarkdown(md: string, base: string, source: SourceRow): Candi
     /^[\s>#*+_|-]*(?:\d+[.)]\s*)?[\s*_]*$/.test(text.slice(text.lastIndexOf("\n", at - 1) + 1, at).replace(/\[\]\([^)]*\)/g, ""));
   for (const m of text.matchAll(/\[([^\]]{6,1000})\]\((https?:\/\/[^)\s]+|\/[^)\s]*)(?:\s+"([^"]*)")?\)/g)) {
     const url = absolute(m[2], base);
-    if (!url || seen.has(url) || !allowed(url, source) || navigationLink(url, listing)) continue;
+    if (!url || seen.has(url) || !allowed(url, source)) continue;
+    const section = source.config.preserveUrlFragment === true && new URL(url).hash.length > 1 && listingItself(url, listing);
+    if (!section && navigationLink(url, listing)) continue;
     if (source.config.linksStartLine === true && !startsLine(m.index!)) continue;
     const label = collapseWhitespace(m[1]!.replace(/[*_`#]/g, ""));
     // A title attribute the card text already contains is the clean title, without dates and blurbs.

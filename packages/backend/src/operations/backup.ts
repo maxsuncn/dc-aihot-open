@@ -87,14 +87,24 @@ export async function runBackup(now = new Date()) {
   // An empty archive only when there is nothing to keep. A failure to read or pack existing files is
   // tried once more and otherwise reported: the database dump still ships, but the run fails.
   const kept: string[] = [];
-  // Feedback screenshots waiting to be forwarded are not kept: the privacy notice keeps only Feishu image keys.
-  for (const d of ["uploads"]) if (await stat(path.join(config.dataDir, d)).then((i) => i.isDirectory(), () => false)) kept.push(d);
+  // Feedback screenshots not forwarded (Feishu is optional) are still referenced by the database as local:
+  // files, so they are kept with the uploads.
+  for (const d of ["uploads", "feedback-screenshots"]) {
+    const info = await stat(path.join(config.dataDir, d)).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    });
+    if (!info) continue;
+    if (!info.isDirectory()) throw new Error(`backup ${d} path is not a directory`);
+    kept.push(d);
+  }
   let filesError: string | null = null;
   if (!kept.length) await run("tar", ["-czf", files, "-T", "/dev/null"]);
   else {
     const pack = () => run("tar", ["-czf", files, "-C", config.dataDir, ...kept]);
     await pack().catch(() => pack()).catch((error: unknown) => {
-      filesError = String(error instanceof Error ? error.message : error).slice(0, 300);
+      const stderr = (error as { stderr?: unknown })?.stderr;
+      filesError = String(typeof stderr === "string" && stderr.trim() ? stderr.trim() : error instanceof Error ? error.message : error).slice(0, 300);
     });
   }
   const out: Array<{ key: string; bytes: number; sha256: string }> = [];

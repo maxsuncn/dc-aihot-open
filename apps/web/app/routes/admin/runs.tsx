@@ -1,33 +1,17 @@
-import { SITE } from "@aihot/industry/site";
 import { useState } from "react";
+import { SITE } from "@aihot/industry/site";
 import { Link, useFetcher } from "react-router";
 import { useEffect } from "react";
 import type { Route } from "./+types/runs";
+import type { AdminDeliveryIssue, AdminReceiptIssue, AdminRuns } from "@aihot/contracts/admin";
 import { adminGet } from "../../lib/admin.server";
 import { useAdminAction } from "../../features/admin/action";
 import { ago, bj, duration, num } from "../../features/admin/format";
 import { AdminPage, Badge, Button, Card, DataTable, Dot, Empty, Field, Json, ReasonDialog, Select, Stat, Time } from "../../features/admin/ui";
 
-type Row = Record<string, any>;
-interface Runs {
-  checkedAt: string;
-  processes: Array<{ role: string; pid: number; host: string; release: string; startedAt: string; at: string; alive: boolean }>;
-  jobs: Row[];
-  timeline: Row[];
-  queues: Array<{ name: string; state: string; n: number; oldest: string }>;
-  failedJobs: Row[];
-  lagging: Row[];
-  receipts: { counts: Record<string, number>; issues: Row[] };
-  deliveries: Row[];
-  errors: Row[];
-  retrying: { count: number; next: string | null };
-  ingest: Row[];
-  leaderboard: { at: string; sources: Array<{ key: string; ok: boolean; at: string; lastOkAt: string | null; changed?: boolean; rows?: number; error?: string }> } | null;
-}
-
 
 export async function loader({ request }: Route.LoaderArgs) {
-  return adminGet<Runs>(request, "/api/admin/runs");
+  return adminGet<AdminRuns>(request, "/api/admin/runs");
 }
 
 export const meta: Route.MetaFunction = () => [{ title: `运行 · ${SITE.name} 后台` }];
@@ -38,9 +22,9 @@ export default function RunsAdmin({ loaderData }: Route.ComponentProps) {
   const refresh = useFetcher<typeof loader>();
   const r = refresh.data ?? loaderData;
   const { run, pending } = useAdminAction();
-  const [receipt, setReceipt] = useState<Row | null>(null);
+  const [receipt, setReceipt] = useState<AdminReceiptIssue | null>(null);
   const [billed, setBilled] = useState("false");
-  const [delivery, setDelivery] = useState<Row | null>(null);
+  const [delivery, setDelivery] = useState<AdminDeliveryIssue | null>(null);
   const [outcome, setOutcome] = useState<"sent" | "drop" | "resend">("sent");
   // Failure group to put back into processing ("" = every failure of the last 30 days).
   const [requeue, setRequeue] = useState<string | null>(null);
@@ -70,6 +54,18 @@ export default function RunsAdmin({ loaderData }: Route.ComponentProps) {
         <Stat label="回执结果未知" value={num(r.receipts.issues.filter((x) => x.status === "unknown").length)} tone={r.receipts.issues.some((x) => x.status === "unknown") ? "bad" : "ok"} hint={`7 天 ${num(Object.values(r.receipts.counts).reduce((a, b) => a + b, 0))} 次付费请求`} />
         <Stat label="投递待核实" value={num(r.deliveries.filter((d) => d.status === "unknown").length)} tone={r.deliveries.some((d) => d.status === "unknown") ? "bad" : "ok"} />
       </div>
+
+      {r.grouping.waiting > 0 && (
+        <Card className="mb-5" title="等待去重确认的精选" right={<span>{num(r.grouping.waiting)} 条等待 · {num(r.grouping.needsAttention)} 条超过 10 分钟</span>} pad={false}>
+          <p className="px-4 py-3 text-[13px] text-ink-3">这些新闻已达到精选条件，确认是否重复后才会进入精选。最多展示等待最久的 30 条。</p>
+          <DataTable dense rows={r.grouping.items} rowKey={(item) => item.articleId} columns={[
+            { key: "title", label: "新闻", render: (item) => <Link className="text-accent" to={`/admin/content/${item.articleId}`}>{item.title}</Link> },
+            { key: "since", label: "开始等待", render: (item) => <Time at={item.since} /> },
+            { key: "recovery", label: "下一步", render: (item) => <Badge tone={item.recovery === "manual" ? "bad" : "warn"}>{item.recovery === "manual" ? "需处理后恢复" : item.recovery === "receipt" ? "等待付费结果自动恢复" : "自动处理中"}</Badge> },
+            { key: "error", label: "原因", render: (item) => <span className="line-clamp-2 text-[12px] text-ink-3">{item.receiptId ? `回执 #${item.receiptId} · ` : ""}{item.error ?? "等待身份确认"}</span> },
+          ]} />
+        </Card>
+      )}
 
       <div className="grid gap-5 xl:grid-cols-2">
         <Card title="队列" pad={false}>
@@ -253,7 +249,7 @@ export default function RunsAdmin({ loaderData }: Route.ComponentProps) {
               ]}
             />
           ) : (
-            <Empty>还没有外部上报（公众号截图监控、采集脚本）</Empty>
+            <Empty>还没有外部上报（采集脚本）</Empty>
           )}
         </Card>
       </div>

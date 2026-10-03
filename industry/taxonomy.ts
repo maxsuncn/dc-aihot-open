@@ -73,7 +73,7 @@ export const TAG_SYNONYMS: Readonly<Record<string, string>> = {
   "lifecycle TCO": "生命周期TCO", "critical component lead time": "供应链与交付周期",
 };
 
-export const ENTITIES: Record<string, { name: string; displayTag: string | null; aliases: string[] }> = {
+export const ENTITIES: Record<string, { name: string; displayTag: string | null; aliases: string[]; otherNames?: string[] }> = {
   "schneider-electric": { name: "施耐德电气", displayTag: "Schneider Electric", aliases: ["Schneider Electric", "施耐德", "施耐德电气"] },
   vertiv: { name: "维谛技术", displayTag: "Vertiv", aliases: ["Vertiv", "维谛", "艾默生网络能源"] },
   eaton: { name: "伊顿", displayTag: "Eaton", aliases: ["Eaton", "伊顿"] },
@@ -131,3 +131,7 @@ export const PUBLISHER_DOMAINS: ReadonlyArray<{ entityId: string; domains: reado
 ];
 
 export const IDENTITY_CONTEXT_ALIASES: ReadonlyArray<{ entityId: string; pattern: RegExp }> = [];
+
+// No single release category defines all data-center industry news.
+export const RELEASE: { category: string; tag: string; unit: string } | null = null;
+export const PLAIN_TERMS: readonly string[] = ["ai", "gpu", "pue", "wue", "ups", "hvdc", "bess", "cdu", "dcim", "bms", "epms", "api", "ceo", "ipo"];
