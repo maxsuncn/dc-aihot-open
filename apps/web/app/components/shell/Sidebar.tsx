@@ -42,7 +42,7 @@ export function Sidebar({ changelogVersion }: { changelogVersion: string | null 
   return (
     <aside className="sticky top-0 hidden h-dvh w-[180px] shrink-0 flex-col border-r border-line bg-sidebar px-3 pb-3.5 pt-6 lg:flex">
       <Link to="/" className="mb-4 flex min-h-[58px] flex-col items-start justify-center gap-1 px-1 text-ink" aria-label={`${SITE.name} 首页`}>
-        <Wordmark size={20} />
+        <Wordmark size={20} lines={["MaxTiger", "AI基建情报"]} />
         <span className="pl-[13px] text-[10px] leading-tight text-ink-4">{SITE.brandNote}</span>
       </Link>
       <nav className="-mx-1 flex-1 overflow-y-auto px-1" aria-label="主导航">

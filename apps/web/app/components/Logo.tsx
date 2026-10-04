@@ -2,11 +2,13 @@
 // loader. A site with its own logo can replace Wordmark here.
 import { SITE } from "@aihot/industry/site";
 
-export function Wordmark({ size = 22, className = "" }: { size?: number; className?: string }) {
+export function Wordmark({ size = 22, className = "", lines }: { size?: number; className?: string; lines?: readonly string[] }) {
   return (
-    <span className={`inline-flex items-center font-black leading-none tracking-[-0.03em] ${className}`} style={{ fontSize: size }} aria-label={SITE.name} role="img">
-      <span aria-hidden="true" className="mr-[0.3em] inline-block size-[0.42em] rounded-full bg-accent" />
-      <span aria-hidden="true">{SITE.name}</span>
+    <span className={`inline-flex items-start font-black tracking-[-0.03em] ${className}`} style={{ fontSize: size }} aria-label={SITE.name} role="img">
+      <span aria-hidden="true" className="mr-[0.3em] mt-[0.22em] inline-block size-[0.42em] shrink-0 rounded-full bg-accent" />
+      <span aria-hidden="true" className={lines ? "flex flex-col leading-[1.08]" : "leading-none"}>
+        {lines ? lines.map((line) => <span key={line}>{line}</span>) : SITE.name}
+      </span>
     </span>
   );
 }
