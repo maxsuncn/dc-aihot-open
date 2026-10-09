@@ -234,7 +234,7 @@ export default function AboutPage() {
               <ol className="mt-2 list-decimal space-y-1.5 pl-5 marker:font-semibold marker:text-accent">
                 <li>{ABOUT.bookmarkTip}</li>
                 <li>
-                  <a href={ABOUT.weeklyUrl} className="font-medium text-accent hover:underline">{ABOUT.newsletterBefore}</a>
+                  <a href={ABOUT.weeklyUrl} className="font-semibold text-accent hover:underline">{ABOUT.newsletterBefore}</a>
                   {ABOUT.newsletterAfter}
                 </li>
                 <li>
@@ -246,11 +246,11 @@ export default function AboutPage() {
           </section>
         </div>
         <div className="flex flex-wrap gap-3 lg:pb-2">
-          <Link to="/" prefetch="intent" className={buttonClass("primary", "lg")}>
-            看今天的精选 <IconArrowRight size={15} />
-          </Link>
-          <Link to="/daily" prefetch="intent" className={buttonClass("secondary", "lg")}>
-            读最新日报
+          <a href={ABOUT.weeklyUrl} className={buttonClass("primary", "lg")}>
+            邮箱订阅周刊 <IconArrowRight size={15} />
+          </a>
+          <Link to="/agent?tab=mcp" prefetch="intent" className={buttonClass("secondary", "lg")}>
+            AI Agent接入
           </Link>
         </div>
       </header>
