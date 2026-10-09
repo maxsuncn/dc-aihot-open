@@ -173,7 +173,7 @@ export default function FeedbackPage() {
     <ReadingLayout aside={<FeedbackAside />}>
       <header>
         <h1 data-page-title="" className="text-[24px] font-semibold leading-[1.3] text-ink">说说你的想法</h1>
-        <p className="mt-2 text-[14.5px] leading-relaxed text-ink-3">发现 bug、想要的功能、看不顺眼的地方，都可以告诉我，我都会看到。</p>
+        <p className="mt-2 text-[14.5px] leading-relaxed text-ink-3">欢迎告诉我你希望增加哪些信息源（网站、公众号、X（Twitter）账号或关键词），也欢迎反馈网站 Bug 和功能建议。</p>
       </header>
 
       <form
@@ -205,7 +205,7 @@ export default function FeedbackPage() {
                 maxLength={MAX_TEXT}
                 value={draft.content}
                 onChange={(e) => setDraft({ ...draft, content: e.target.value })}
-                placeholder="例如：我在搜索某个关键词时遇到……我原本想……"
+                placeholder="例如：希望增加「XX公众号」为信息源；希望支持……功能；我遇到的问题是……"
                 className={`${field} block resize-y px-4 pb-8 pt-3.5 text-[14.5px] leading-relaxed`}
               />
               <span className="mono pointer-events-none absolute bottom-3 right-4 text-[11px] text-ink-4">

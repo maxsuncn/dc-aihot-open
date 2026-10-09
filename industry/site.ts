@@ -22,22 +22,24 @@ export const SITE = {
 
 export const ABOUT = {
   kicker: `关于 ${SITE.name}`,
-  headline: ["数据中心的变化，", "从信号追到项目。"] as [string, string],
-  lead: "面向数据中心建设与运维产业链，持续追踪智算机房、电力与储能、冷却热管理。",
+  headline: ["数据中心的变化，", "从信息到洞察"] as [string, string],
+  lead: "追踪算力基础设施与数据中心建设运维动态，把信息整理成值得关注的行业洞察。",
+  greeting: "你好，我是 MaxTiger。AI 时代，我想做一个更高效的行业情报站。它开源、免费，先服务自己，也希望能帮到你：一起关注算力基础设施，以及数据中心建设与运维行业正在发生的事。",
+  sourcesIntro: "这里关注主流媒体、企业官网、公众号、X（原 Twitter）和 Google Alerts 等渠道中的相关话题，并对信息进行结构化整理、去重与交叉核验，尽力帮你更快掌握值得关注的行业动态。",
+  useLead: "如果你觉得有用，可以：",
+  bookmarkTip: "把网站加入浏览器书签，或收藏到微信浮窗，方便随时回来。",
+  newsletterBefore: "订阅邮件周刊",
+  newsletterAfter: "，每周花 10 分钟，在邮箱里读完行业动态。",
+  agentBefore: "让 AI Agent 接入本站",
+  agentAfter: "，在接入页查看 MCP、网页/API 等方式，再用自然语言查询行业信息；也可以把这些配置写进你常用的 Skill。",
   steps: {
     collect: "持续采集公开信息，追踪智算机房、电力与储能、冷却热管理及产业链动态。",
     store: "解析内容、归并重复报道，保留来源、时间和原文链接。",
     select: "结合评分与来源材料，区分已确认事实、厂商主张和仍待核验的线索。",
     publish: "每日更新5-8篇，每周周刊汇总本周情报主线，并链接到最具阅读价值的文章。",
   },
-  process: "公开信息进，结构化情报出——解析、去重、交叉验证，每条信号都标注证据等级。",
-  openSource: "作为开源免费项目，服务与我自己，也希望服务到你：关注算力基础设施正在发生什么。",
-  weeklyLead: "也可以",
-  weeklyLinkLabel: "留下邮箱订阅周刊",
   weeklyUrl: "https://quaily.com/maxtiger/",
-  weeklyTail: "，每周 10 分钟在邮箱中阅读全球数据中心建设与运维的动态。",
   copyright: `${SITE.name} 是聚合摘要和阅读索引，原文版权归各来源所有。更正、下架或调整展示方式请通过`,
-  contact: "如果你在产业链里——技术、建设、投资，也欢迎加我的微信聊聊。合作、勘误、提供线索、八卦行业，都欢迎。",
   maker: null as null | {
     name: string;
     greeting: string[];

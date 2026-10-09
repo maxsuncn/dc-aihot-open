@@ -225,6 +225,25 @@ export default function AboutPage() {
               </span>
             ))}
           </p>
+          <section aria-labelledby="about-introduction" className="mt-7 max-w-[48rem] space-y-4 text-[14.5px] leading-[1.85] text-ink-2 sm:text-[15px] xl:text-[16px]">
+            <h2 id="about-introduction" className="sr-only">你好，我是 MaxTiger</h2>
+            <p>{ABOUT.greeting}</p>
+            <p>{ABOUT.sourcesIntro}</p>
+            <div className="pt-1">
+              <h3 className="font-semibold text-ink">{ABOUT.useLead}</h3>
+              <ol className="mt-2 list-decimal space-y-1.5 pl-5 marker:font-semibold marker:text-accent">
+                <li>{ABOUT.bookmarkTip}</li>
+                <li>
+                  <a href={ABOUT.weeklyUrl} className="font-medium text-accent hover:underline">{ABOUT.newsletterBefore}</a>
+                  {ABOUT.newsletterAfter}
+                </li>
+                <li>
+                  <Link viewTransition to="/agent?tab=mcp" className="font-medium text-accent hover:underline">{ABOUT.agentBefore}</Link>
+                  {ABOUT.agentAfter}
+                </li>
+              </ol>
+            </div>
+          </section>
         </div>
         <div className="flex flex-wrap gap-3 lg:pb-2">
           <Link to="/" prefetch="intent" className={buttonClass("primary", "lg")}>
@@ -266,13 +285,6 @@ export default function AboutPage() {
             </li>
           ))}
         </ol>
-      </section>
-
-      <section className="mt-10 space-y-3 text-[14px] leading-relaxed text-ink-3">
-        <p>{ABOUT.process}</p>
-        <p>{ABOUT.openSource}</p>
-        <p>{ABOUT.weeklyLead}<a href={ABOUT.weeklyUrl} className="text-accent hover:underline">{ABOUT.weeklyLinkLabel}</a>{ABOUT.weeklyTail}</p>
-        <p>{ABOUT.contact}</p>
       </section>
 
       {ABOUT.maker && <Maker maker={ABOUT.maker} contact={contact} />}
