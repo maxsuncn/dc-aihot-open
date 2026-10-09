@@ -87,8 +87,8 @@ export default function MorePage() {
           ))}
         </Group>
         <Group title="关于">
-          <RowLink row={{ to: "/about", label: `关于 ${SITE.name}`, icon: <IconHeart size={20} /> }} />
-          <RowLink row={{ to: "/feedback", label: "意见反馈", icon: <IconMessage size={20} /> }} />
+          <RowLink row={{ to: "/about", label: "关于MaxTiger_AI基建情报", icon: <IconHeart size={20} /> }} />
+          <RowLink row={{ to: "/feedback", label: "需求反馈", icon: <IconMessage size={20} /> }} />
         </Group>
       </div>
       <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] leading-[2] text-ink-4">
