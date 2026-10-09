@@ -11,7 +11,6 @@ export const SITE = {
   defaultUrl: "http://localhost:3000",
   mcpPrefix: "dcsignal",
   contactEmail: null as string | null,
-  footerNote: "原文版权归各来源所有；摘要用于发现线索，重要事实请回到原文核验。",
   icp: null as string | null,
   organization: {
     name: "MaxTiger情报站",
@@ -39,7 +38,7 @@ export const ABOUT = {
     community: "欢迎联络，互通有无",
   },
   weeklyUrl: "https://quaily.com/maxtiger/",
-  copyright: `${SITE.name} 是聚合摘要和阅读索引，原文版权归各来源所有。更正、下架或调整展示方式请通过`,
+  copyright: "原文版权归各来源所有。如需补充、更正，或换展示形式（微信公众号可只显示摘要，阅读原文跳转到微信原文，让这里成为你公众号的流量入口）。任何需求和建议都可以通过",
   maker: null as null | {
     name: string;
     greeting: string[];
