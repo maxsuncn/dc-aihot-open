@@ -106,7 +106,7 @@ function stagesOf(stats: SiteStats | null): Stage[] {
       title: "社群",
       figure: <img src={communityQr} alt="MaxTiger 个人微信二维码" width={160} height={160} loading="lazy" className="size-32 rounded-tile border border-line bg-white object-contain p-1 sm:size-36" />,
       text: ABOUT.steps.community,
-      note: "扫码添加 MaxTiger 微信",
+      note: null,
     },
   ];
 }
