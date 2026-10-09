@@ -17,9 +17,18 @@ export async function loader({ request }: { request: Request }) {
   return apiGet<TopicsResponse>("/api/site/topics", { signal: request.signal });
 }
 
+function visibleGroups(groups: TopicsResponse["groups"]) {
+  return groups
+    .filter((g) => g.key !== "genre")
+    .map((g) => g.key === "company"
+      ? { ...g, blurb: "按近期精选文章中的企业关键词热度排序，跟踪产业链玩家动态" }
+      : { ...g, name: "技术与市场", blurb: "按近期精选文章中的关键词热度排序，浏览技术、项目与市场动态" });
+}
+
 export function meta({ loaderData }: Route.MetaArgs) {
   if (!loaderData) return pageMeta({ title: withSubject("主题"), path: "/topics", image: "/og/pages/topics.png" });
-  const { groups, topics } = loaderData;
+  const groups = visibleGroups(loaderData.groups);
+  const topics = loaderData.topics.filter((t) => t.group !== "genre");
   const by = groups.map((g) => g.name).join("、");
   const indexed = topics.filter((t) => t.indexable);
   const named = indexed.slice(0, 6).map((t) => t.name.split(" / ")[0]).join("、");
@@ -98,16 +107,23 @@ function TopicCard({ t }: { t: TopicSummary }) {
 
 export default function TopicsPage() {
   const { groups, topics } = useLoaderData<typeof loader>();
+  const groupsToShow = visibleGroups(groups);
+  const visibleTopics = topics.filter((t) => t.group !== "genre");
+  const byActivity = (a: TopicSummary, b: TopicSummary) =>
+    b.recent - a.recent
+    || Date.parse(b.latest?.at ?? "") - Date.parse(a.latest?.at ?? "")
+    || b.total - a.total
+    || a.name.localeCompare(b.name, "zh-CN");
   return (
     <div className="pb-10">
       <PhoneBar back={{ to: "/more", label: "我的" }} title="主题" />
       <header className="pb-2 pt-3 lg:pt-1">
         <h1 data-page-title="" className="text-[24px] font-semibold leading-[1.3] text-ink">{subjectAfter("按主题看")}</h1>
         <p className="mt-1.5 text-[13px] leading-relaxed text-ink-3">
-          按{groups.map((g) => g.name).join("、")}浏览 <span className="num">{topics.length}</span> 个主题，追踪最新精选与重要进展。
+          按{groupsToShow.map((g) => g.name).join("、")}浏览 <span className="num">{visibleTopics.length}</span> 个主题，按近 30 天精选文章中的关键词热度排序。
         </p>
       </header>
-      {groups.map((g) => (
+      {groupsToShow.map((g) => (
         <section key={g.key} aria-labelledby={`topics-${g.key}`} className="pt-8">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
             <h2 id={`topics-${g.key}`} className="text-[15px] font-bold text-ink">
@@ -116,8 +132,9 @@ export default function TopicsPage() {
             <p className="text-[12px] text-ink-4">{g.blurb}</p>
           </div>
           <ul className="mt-3 divide-y divide-line-soft overflow-hidden rounded-card border border-line bg-surface lg:mt-3.5 lg:grid lg:grid-cols-3 lg:gap-3 lg:divide-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent xl:grid-cols-4">
-            {topics
+            {visibleTopics
               .filter((t) => t.group === g.key)
+              .sort(byActivity)
               .map((t) => (
                 <li key={t.slug}>
                   <TopicCard t={t} />
