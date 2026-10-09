@@ -8,6 +8,7 @@ import { Kicker } from "../components/ui/Kicker";
 import { buttonClass } from "../components/ui/Controls";
 import { IconArrowRight } from "../components/icons";
 import { SignalRiver, type RiverSource } from "../features/about/SignalRiver";
+import communityQr from "../features/about/community-qr.png";
 import { PhoneBar } from "../components/shell/PhoneBar";
 import type { Screen } from "../components/shell/screens";
 
@@ -95,17 +96,17 @@ function stagesOf(stats: SiteStats | null): Stage[] {
     },
     {
       no: "03",
-      title: "精选",
-      figure: stats && <Figure n={stats.selected} unit="条精选" />,
-      text: ABOUT.steps.select,
-      note: stats && <>过去 24 小时 {stats.day.selected} 条进了精选</>,
-    },
-    {
-      no: "04",
       title: "成刊",
       figure: stats && <Figure n={stats.dailies} unit="期日报" />,
       text: ABOUT.steps.publish,
       note: "也可以用 RSS、API、MCP 订阅",
+    },
+    {
+      no: "04",
+      title: "社群",
+      figure: <img src={communityQr} alt="MaxTiger 个人微信二维码" width={160} height={160} loading="lazy" className="size-32 rounded-tile border border-line bg-white object-contain p-1 sm:size-36" />,
+      text: ABOUT.steps.community,
+      note: "扫码添加 MaxTiger 微信",
     },
   ];
 }
